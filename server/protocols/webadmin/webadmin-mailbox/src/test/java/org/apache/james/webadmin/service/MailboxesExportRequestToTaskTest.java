@@ -205,7 +205,7 @@ class MailboxesExportRequestToTaskTest {
     }
 
     @Test
-    void exportMailboxesShouldCompleteWhenUserHaveNoMailbox() throws Exception {
+    void exportMailboxesShouldCompleteWhenUserHasNoMailbox() {
         String taskId = with()
             .queryParam("action", "export")
             .post()
@@ -227,7 +227,7 @@ class MailboxesExportRequestToTaskTest {
     }
 
     @Test
-    void exportMailboxesShouldProduceEmptyZipWhenUserHaveNoMailbox() throws Exception {
+    void exportMailboxesShouldProduceEmptyZipWhenUserHasNoMailbox() throws Exception {
         String taskId = with()
             .queryParam("action", "export")
             .post()
@@ -240,7 +240,7 @@ class MailboxesExportRequestToTaskTest {
     }
 
     @Test
-    void exportMailboxesShouldCompleteWhenUserHaveNoMessage() throws Exception {
+    void exportMailboxesShouldCompleteWhenUserHasNoMessage() throws Exception {
         testSystem.mailboxManager.createMailbox(MailboxPath.inbox(BOB), testSystem.bobSession);
 
         String taskId = with()
@@ -264,7 +264,7 @@ class MailboxesExportRequestToTaskTest {
     }
 
     @Test
-    void exportMailboxesShouldProduceAZipFileWhenUserHaveNoMessage() throws Exception {
+    void exportMailboxesShouldProduceAZipFileWhenUserHasNoMessage() throws Exception {
         testSystem.mailboxManager.createMailbox(MailboxPath.inbox(BOB), testSystem.bobSession);
 
         String taskId = with()
@@ -310,7 +310,7 @@ class MailboxesExportRequestToTaskTest {
     }
 
     @Test
-    void exportMailboxesShouldCompleteWhenUserHaveMessage() throws Exception {
+    void exportMailboxesShouldCompleteWhenUserHasMessage() throws Exception {
         MailboxId bobInboxboxId = testSystem.mailboxManager.createMailbox(MailboxPath.inbox(BOB), testSystem.bobSession)
             .get();
 
@@ -339,7 +339,7 @@ class MailboxesExportRequestToTaskTest {
     }
 
     @Test
-    void exportMailboxesShouldProduceAZipFileWhenUserHaveMessage() throws Exception {
+    void exportMailboxesShouldProduceAZipFileWhenUserHasMessage() throws Exception {
         MailboxId bobInboxboxId = testSystem.mailboxManager.createMailbox(MailboxPath.inbox(BOB), testSystem.bobSession)
             .get();
 
@@ -383,7 +383,7 @@ class MailboxesExportRequestToTaskTest {
 
         String taskId = with()
             .queryParam("action", "export")
-        .post()
+            .post()
             .jsonPath()
             .get("taskId");
 

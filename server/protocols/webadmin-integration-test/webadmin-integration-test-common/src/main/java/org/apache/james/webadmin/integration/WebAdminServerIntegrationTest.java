@@ -347,9 +347,9 @@ public abstract class WebAdminServerIntegrationTest {
 
         given()
             .basePath(TasksRoutes.BASE)
-            .when()
+        .when()
             .get(taskId + "/await")
-            .then()
+        .then()
             .body("status", is("completed"))
             .body("type", is("MailboxesExportTask"));
     }
