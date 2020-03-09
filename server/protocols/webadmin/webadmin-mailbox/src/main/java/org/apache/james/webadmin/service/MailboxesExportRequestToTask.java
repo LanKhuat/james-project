@@ -53,7 +53,7 @@ public class MailboxesExportRequestToTask extends TaskFromRequestRegistry.TaskRe
         throw ErrorResponder.builder()
             .type(ErrorResponder.ErrorType.NOT_FOUND)
             .statusCode(HttpStatus.NOT_FOUND_404)
-            .message("User '" + username.asString() + "' does not exists")
+            .message(String.format("User '%s' does not exist", username.asString()))
             .haltError();
     }
 }

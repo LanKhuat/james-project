@@ -68,12 +68,12 @@ import spark.Service;
 @ExtendWith(FileSystemExtension.class)
 class MailboxesExportRequestToTaskTest {
 
-    private final class JMAPRoutes implements Routes {
+    private final class ExportRoutes implements Routes {
         private final ExportService service;
         private final TaskManager taskManager;
         private final UsersRepository usersRepository;
 
-        private JMAPRoutes(ExportService service, TaskManager taskManager, UsersRepository usersRepository) {
+        private ExportRoutes(ExportService service, TaskManager taskManager, UsersRepository usersRepository) {
             this.service = service;
             this.taskManager = taskManager;
             this.usersRepository = usersRepository;
@@ -112,7 +112,7 @@ class MailboxesExportRequestToTaskTest {
         JsonTransformer jsonTransformer = new JsonTransformer();
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new TasksRoutes(taskManager, jsonTransformer),
-            new JMAPRoutes(
+            new ExportRoutes(
                 new ExportService(testSystem.backup, testSystem.blobStore, testSystem.blobExport, testSystem.usersRepository),
                 taskManager, testSystem.usersRepository))
             .start();
@@ -191,7 +191,7 @@ class MailboxesExportRequestToTaskTest {
             .statusCode(HttpStatus.NOT_FOUND_404)
             .body("statusCode", is(404))
             .body("type", is(ErrorResponder.ErrorType.NOT_FOUND.getType()))
-            .body("message", is("User 'notfound' does not exists"));
+            .body("message", is("User 'notfound' does not exist"));
     }
 
     @Test

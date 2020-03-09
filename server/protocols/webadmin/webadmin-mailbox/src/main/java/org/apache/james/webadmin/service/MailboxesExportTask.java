@@ -65,9 +65,8 @@ public class MailboxesExportTask implements Task {
         private final String type;
         private final String username;
 
-        public MailboxesExportTaskDTO(
-            @JsonProperty("type") String type,
-            @JsonProperty("username") String username) {
+        public MailboxesExportTaskDTO(@JsonProperty("type") String type,
+                                      @JsonProperty("username") String username) {
             this.type = type;
             this.username = username;
         }
