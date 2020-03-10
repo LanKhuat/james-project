@@ -24,14 +24,6 @@ import static org.apache.james.webadmin.routes.MailboxesRoutes.ONE_MAILBOX_TASKS
 import static org.apache.james.webadmin.routes.MailboxesRoutes.ONE_MAIL_TASKS;
 import static org.apache.james.webadmin.routes.UserMailboxesRoutes.USER_MAILBOXES_OPERATIONS_INJECTION_KEY;
 
-import org.apache.james.mailbox.backup.ArchiveService;
-import org.apache.james.mailbox.backup.DefaultMailboxBackup;
-import org.apache.james.mailbox.backup.MailArchiveRestorer;
-import org.apache.james.mailbox.backup.MailArchivesLoader;
-import org.apache.james.mailbox.backup.MailboxBackup;
-import org.apache.james.mailbox.backup.ZipMailArchiveRestorer;
-import org.apache.james.mailbox.backup.zip.ZipArchivesLoader;
-import org.apache.james.mailbox.backup.zip.Zipper;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.jackson.QuotaModule;
 import org.apache.james.webadmin.routes.DomainQuotaRoutes;
@@ -55,6 +47,8 @@ public class MailboxRoutesModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        install(new MailboxesBackupModule());
+
         Multibinder<Routes> routesMultibinder = Multibinder.newSetBinder(binder(), Routes.class);
         routesMultibinder.addBinding().to(DomainQuotaRoutes.class);
         routesMultibinder.addBinding().to(EventDeadLettersRoutes.class);
@@ -70,18 +64,6 @@ public class MailboxRoutesModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ALL_MAILBOXES_TASKS));
         Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ONE_MAILBOX_TASKS));
         Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ONE_MAIL_TASKS));
-
-        bind(Zipper.class).in(Scopes.SINGLETON);
-        bind(ArchiveService.class).to(Zipper.class);
-
-        bind(ZipMailArchiveRestorer.class).in(Scopes.SINGLETON);
-        bind(MailArchiveRestorer.class).to(ZipMailArchiveRestorer.class);
-
-        bind(ZipArchivesLoader.class).in(Scopes.SINGLETON);
-        bind(MailArchivesLoader.class).to(ZipArchivesLoader.class);
-
-        bind(DefaultMailboxBackup.class).in(Scopes.SINGLETON);
-        bind(MailboxBackup.class).to(DefaultMailboxBackup.class);
 
         bind(ExportService.class).in(Scopes.SINGLETON);
         Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(UserMailboxesRoutes.USER_MAILBOXES_OPERATIONS_INJECTION_KEY))
