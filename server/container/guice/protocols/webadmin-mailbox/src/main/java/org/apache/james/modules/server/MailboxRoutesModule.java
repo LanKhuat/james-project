@@ -32,14 +32,10 @@ import org.apache.james.webadmin.routes.GlobalQuotaRoutes;
 import org.apache.james.webadmin.routes.MailboxesRoutes;
 import org.apache.james.webadmin.routes.UserMailboxesRoutes;
 import org.apache.james.webadmin.routes.UserQuotaRoutes;
-import org.apache.james.webadmin.service.ExportService;
-import org.apache.james.webadmin.service.MailboxesExportRequestToTask;
-import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 import org.apache.james.webadmin.tasks.TaskFromRequestRegistry.TaskRegistration;
 import org.apache.james.webadmin.utils.JsonTransformerModule;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
@@ -47,8 +43,6 @@ public class MailboxRoutesModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        install(new MailboxesBackupModule());
-
         Multibinder<Routes> routesMultibinder = Multibinder.newSetBinder(binder(), Routes.class);
         routesMultibinder.addBinding().to(DomainQuotaRoutes.class);
         routesMultibinder.addBinding().to(EventDeadLettersRoutes.class);
@@ -64,9 +58,5 @@ public class MailboxRoutesModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ALL_MAILBOXES_TASKS));
         Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ONE_MAILBOX_TASKS));
         Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ONE_MAIL_TASKS));
-
-        bind(ExportService.class).in(Scopes.SINGLETON);
-        Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(UserMailboxesRoutes.USER_MAILBOXES_OPERATIONS_INJECTION_KEY))
-            .addBinding().to(MailboxesExportRequestToTask.class);
     }
 }

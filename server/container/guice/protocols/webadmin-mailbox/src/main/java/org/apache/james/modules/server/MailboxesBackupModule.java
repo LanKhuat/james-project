@@ -27,9 +27,15 @@ import org.apache.james.mailbox.backup.MailboxBackup;
 import org.apache.james.mailbox.backup.ZipMailArchiveRestorer;
 import org.apache.james.mailbox.backup.zip.ZipArchivesLoader;
 import org.apache.james.mailbox.backup.zip.Zipper;
+import org.apache.james.webadmin.routes.UserMailboxesRoutes;
+import org.apache.james.webadmin.service.ExportService;
+import org.apache.james.webadmin.service.MailboxesExportRequestToTask;
+import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
 public class MailboxesBackupModule extends AbstractModule {
 
@@ -46,5 +52,9 @@ public class MailboxesBackupModule extends AbstractModule {
 
         bind(DefaultMailboxBackup.class).in(Scopes.SINGLETON);
         bind(MailboxBackup.class).to(DefaultMailboxBackup.class);
+
+        bind(ExportService.class).in(Scopes.SINGLETON);
+        Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(UserMailboxesRoutes.USER_MAILBOXES_OPERATIONS_INJECTION_KEY))
+            .addBinding().to(MailboxesExportRequestToTask.class);
     }
 }
