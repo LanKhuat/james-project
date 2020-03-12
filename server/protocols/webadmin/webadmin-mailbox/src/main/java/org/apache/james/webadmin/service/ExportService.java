@@ -45,6 +45,25 @@ import reactor.core.scheduler.Schedulers;
 
 public class ExportService {
 
+    public enum Stage {
+        STARTING,
+        ZIPPING,
+        EXPORTING,
+        COMPLETED,
+    }
+
+    public static class Progress {
+        private Stage stage;
+
+        public Stage getStage() {
+            return stage;
+        }
+
+        public void setStage(Stage stage) {
+            this.stage = stage;
+        }
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ExportService.class);
     private static final String EXPLANATION = "The backup of your mailboxes has been exported to you";
     private static final String FILE_PREFIX = "mailbox-backup-";
@@ -62,17 +81,18 @@ public class ExportService {
         this.usersRepository = usersRepository;
     }
 
-    public Mono<Task.Result> export(Username username) {
+    public Mono<Task.Result> export(Progress progress, Username username) {
         return Mono.usingWhen(
-            Mono.fromCallable(() -> zipMailboxesContent(username)),
-            inputStream -> export(username, inputStream),
+            Mono.fromCallable(() -> zipMailboxesContent(progress, username)),
+            inputStream -> export(progress, username, inputStream),
             this::closeResource,
             (inputStream, throwable) -> closeResource(inputStream),
             this::closeResource
         );
     }
 
-    private InputStream zipMailboxesContent(Username username) throws IOException {
+    InputStream zipMailboxesContent(Progress progress, Username username) throws IOException {
+        progress.setStage(Stage.ZIPPING);
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream(out);
 
@@ -83,11 +103,13 @@ public class ExportService {
         return in;
     }
 
-    private Mono<Task.Result> export(Username username, InputStream inputStream) {
+    Mono<Task.Result> export(Progress progress, Username username, InputStream inputStream) {
+        progress.setStage(Stage.EXPORTING);
         return Mono.usingWhen(
                 blobStore.save(blobStore.getDefaultBucketName(), inputStream, BlobStore.StoragePolicy.LOW_COST),
-                blobId -> export(username, blobId),
+                blobId -> export(progress, username, blobId),
                 this::deleteBlob)
+            .doOnSuccess(any -> progress.setStage(Stage.COMPLETED))
             .thenReturn(Task.Result.COMPLETED)
             .onErrorResume(e -> {
                 LOGGER.error("Error exporting mailboxes of user: {}", username.asString(), e);
@@ -95,7 +117,7 @@ public class ExportService {
             });
     }
 
-    private Mono<Void> export(Username username, BlobId blobId) {
+    private Mono<Void> export(Progress progress, Username username, BlobId blobId) {
         return Mono.fromRunnable(Throwing.runnable(() ->
             blobExport.blobId(blobId)
                 .with(usersRepository.getMailAddressFor(username))
