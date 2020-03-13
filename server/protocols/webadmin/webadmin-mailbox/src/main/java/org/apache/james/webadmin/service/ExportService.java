@@ -66,9 +66,9 @@ public class ExportService {
         return Mono.usingWhen(
             Mono.fromCallable(() -> zipMailboxesContent(username)),
             inputStream -> export(username, inputStream),
-            this::closeResourceAsync,
-            (inputStream, throwable) -> closeResourceAsync(inputStream),
-            this::closeResourceAsync
+            this::closeResource,
+            (inputStream, throwable) -> closeResource(inputStream),
+            this::closeResource
         );
     }
 
@@ -102,7 +102,8 @@ public class ExportService {
                 .explanation(EXPLANATION)
                 .filePrefix(FILE_PREFIX + username.asString() + "-")
                 .fileExtension(FileExtension.ZIP)
-                .export()));
+                .export())
+            .sneakyThrow());
     }
 
     private Mono<Void> deleteBlob(BlobId blobId) {
@@ -117,13 +118,13 @@ public class ExportService {
         return Mono.usingWhen(
             Mono.fromCallable(() -> out),
             outputStream -> Mono.fromRunnable(Throwing.runnable(() -> mailboxBackup.backupAccount(username, outputStream))),
-            this::closeResourceAsync,
-            (outputStream, throwable) -> closeResourceAsync(outputStream)
+            this::closeResource,
+            (outputStream, throwable) -> closeResource(outputStream)
                 .doFinally(any -> LOGGER.error("Error while backing up mailboxes for user {}", username.asString(), throwable)),
-            this::closeResourceAsync);
+            this::closeResource);
     }
 
-    private Mono<Void> closeResourceAsync(Closeable resource) {
+    private Mono<Void> closeResource(Closeable resource) {
         return Mono.fromRunnable(() -> {
             try {
                 resource.close();

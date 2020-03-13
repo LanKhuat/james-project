@@ -32,6 +32,8 @@ import java.io.FileInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import javax.mail.MessagingException;
+
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.HashBlobId;
@@ -141,6 +143,10 @@ class ExportServiceTest {
         return new DefaultMailboxBackup(mailboxManager, archiveService, archiveRestorer);
     }
 
+    private String getFileUrl() throws MessagingException {
+        return mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
+    }
+
     @Test
     void exportUserMailboxesDataShouldReturnCompletedWhenUserDoesNotExist() {
         assertThat(testee.export(UNKNOWN_USER).block())
@@ -173,18 +179,16 @@ class ExportServiceTest {
     @Test
     void exportUserMailboxesDataShouldProduceAnEmptyZipWhenUserDoesNotExist() throws Exception {
         testee.export(UNKNOWN_USER).block();
-            String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
-            ZipAssert.assertThatZip(new FileInputStream(fileUrl))
-                .hasNoEntry();
+
+        ZipAssert.assertThatZip(new FileInputStream(getFileUrl()))
+            .hasNoEntry();
     }
 
     @Test
     void exportUserMailboxesDataShouldProduceAnEmptyZipWhenExistingUserWithoutAnyMailboxes() throws Exception {
         testee.export(BOB).block();
 
-        String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
-
-        ZipAssert.assertThatZip(new FileInputStream(fileUrl))
+        ZipAssert.assertThatZip(new FileInputStream(getFileUrl()))
             .hasNoEntry();
     }
 
@@ -194,9 +198,7 @@ class ExportServiceTest {
 
         testee.export(BOB).block();
 
-        String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
-
-        ZipAssert.assertThatZip(new FileInputStream(fileUrl))
+        ZipAssert.assertThatZip(new FileInputStream(getFileUrl()))
             .containsOnlyEntriesMatching(
                 ZipAssert.EntryChecks.hasName(INBOX + "/").isDirectory(),
                 ZipAssert.EntryChecks.hasName(id.getMessageId().serialize()).hasStringContent(MESSAGE_CONTENT));
@@ -208,9 +210,7 @@ class ExportServiceTest {
 
         testee.export(BOB).block();
 
-        String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
-
-        assertThat(Files.getFileExtension(fileUrl)).isEqualTo(FileExtension.ZIP.getExtension());
+        assertThat(Files.getFileExtension(getFileUrl())).isEqualTo(FileExtension.ZIP.getExtension());
     }
 
     @Test
@@ -219,8 +219,7 @@ class ExportServiceTest {
 
         testee.export(BOB).block();
 
-        String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
-        File file = new File(fileUrl);
+        File file = new File(getFileUrl());
 
         assertThat(file.getName()).startsWith(FILE_PREFIX + BOB.asString());
     }
@@ -230,9 +229,8 @@ class ExportServiceTest {
         ComposedMessageId id = createAMailboxWithAMail(TWELVE_MEGABYTES_STRING);
 
         testee.export(BOB).block();
-        String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
 
-        ZipAssert.assertThatZip(new FileInputStream(fileUrl))
+        ZipAssert.assertThatZip(new FileInputStream(getFileUrl()))
             .containsOnlyEntriesMatching(
                 ZipAssert.EntryChecks.hasName(INBOX + "/").isDirectory(),
                 ZipAssert.EntryChecks.hasName(id.getMessageId().serialize()).hasStringContent(TWELVE_MEGABYTES_STRING));
@@ -244,8 +242,7 @@ class ExportServiceTest {
 
         testee.export(BOB).block();
 
-        String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
-        String fileName = Files.getNameWithoutExtension(fileUrl);
+        String fileName = Files.getNameWithoutExtension(getFileUrl());
         String blobId = fileName.substring(fileName.lastIndexOf("-") + 1);
 
         SoftAssertions.assertSoftly(softly -> {
@@ -266,8 +263,7 @@ class ExportServiceTest {
 
         Task.Result result = testee.export(BOB).block();
 
-        String fileUrl = mailetContext.getSentMails().get(0).getMsg().getHeader(CORRESPONDING_FILE_HEADER)[0];
-        String fileName = Files.getNameWithoutExtension(fileUrl);
+        String fileName = Files.getNameWithoutExtension(getFileUrl());
         String blobId = fileName.substring(fileName.lastIndexOf("-") + 1);
 
         blobStore.read(blobStore.getDefaultBucketName(), FACTORY.from(blobId));
