@@ -52,7 +52,7 @@ public class RabbitMQHealthCheck implements HealthCheck {
                 return Result.healthy(COMPONENT_NAME);
             } else {
                 String message = "The created connection was not opened";
-                LOGGER.error(message);
+                LOGGER.error(String.format("Unhealthy RabbitMQ instances: %s", message));
                 return Result.unhealthy(COMPONENT_NAME, message);
             }
         } catch (Exception e) {
