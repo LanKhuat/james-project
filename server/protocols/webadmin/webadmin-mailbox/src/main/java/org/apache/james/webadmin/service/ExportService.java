@@ -104,20 +104,20 @@ public class ExportService {
     }
 
     Mono<Task.Result> export(Progress progress, Username username, InputStream inputStream) {
-        progress.setStage(Stage.EXPORTING);
-        return Mono.usingWhen(
+        return Mono.fromRunnable(() -> progress.setStage(Stage.EXPORTING))
+            .then(Mono.usingWhen(
                 blobStore.save(blobStore.getDefaultBucketName(), inputStream, BlobStore.StoragePolicy.LOW_COST),
-                blobId -> export(progress, username, blobId),
+                blobId -> export(username, blobId),
                 this::deleteBlob)
             .doOnSuccess(any -> progress.setStage(Stage.COMPLETED))
             .thenReturn(Task.Result.COMPLETED)
             .onErrorResume(e -> {
                 LOGGER.error("Error exporting mailboxes of user: {}", username.asString(), e);
                 return Mono.just(Task.Result.PARTIAL);
-            });
+            }));
     }
 
-    private Mono<Void> export(Progress progress, Username username, BlobId blobId) {
+    private Mono<Void> export(Username username, BlobId blobId) {
         return Mono.fromRunnable(Throwing.runnable(() ->
             blobExport.blobId(blobId)
                 .with(usersRepository.getMailAddressFor(username))

@@ -30,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.mail.MessagingException;
 
@@ -221,7 +222,11 @@ class ExportServiceTest {
 
     @Test
     void exportUserMailboxesDataShouldUpdateProgressWhenExporting() {
-        testee.export(progress, BOB, new ByteArrayInputStream(MESSAGE_CONTENT.getBytes()));
+        doReturn(Mono.error(new RuntimeException()))
+            .when(testSystem.blobStore)
+            .save(any(), any(InputStream.class), any());
+
+        testee.export(progress, BOB, new ByteArrayInputStream(MESSAGE_CONTENT.getBytes())).block();
 
         assertThat(progress.getStage()).isEqualTo(ExportService.Stage.EXPORTING);
     }
