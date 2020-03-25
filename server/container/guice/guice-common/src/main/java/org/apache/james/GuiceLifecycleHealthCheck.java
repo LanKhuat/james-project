@@ -46,7 +46,7 @@ public class GuiceLifecycleHealthCheck implements HealthCheck {
         if (probe.isStarted()) {
             return Result.healthy(componentName());
         } else {
-            LOGGER.error("James server is not started, the connection is unhealthy");
+            LOGGER.error("James server is not started");
             return Result.unhealthy(componentName(), "James server is not started.");
         }
     }

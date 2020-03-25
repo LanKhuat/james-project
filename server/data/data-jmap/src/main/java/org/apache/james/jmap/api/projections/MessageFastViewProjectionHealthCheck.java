@@ -67,7 +67,7 @@ public class MessageFastViewProjectionHealthCheck implements HealthCheck {
         long totalCount = hitCount + missCount;
         double missCountPercentage = missCount * 100.0d / totalCount;
         if (missCountPercentage > MAXIMUM_MISS_PERCENTAGE_ACCEPTED) {
-            LOGGER.warn("MessageFastViewProjection missCountPercentage exceeded the threshold, the connection is degraded");
+            LOGGER.warn("MessageFastViewProjection missCountPercentage exceeded the threshold");
             return Result.degraded(COMPONENT_NAME,
                 String.format("retrieveMissCount percentage %s%% (%d/%d) is higher than the threshold %s%%",
                     missCountPercentage, missCount, totalCount, MAXIMUM_MISS_PERCENTAGE_ACCEPTED));

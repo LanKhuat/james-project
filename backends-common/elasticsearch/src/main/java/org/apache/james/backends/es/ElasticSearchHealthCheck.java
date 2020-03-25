@@ -81,7 +81,7 @@ public class ElasticSearchHealthCheck implements HealthCheck {
             case YELLOW:
                 return Result.healthy(COMPONENT_NAME);
             case RED:
-                LOGGER.error("ElasticSearchCluster return RED status, the connection is unhealthy");
+                LOGGER.error("ElasticSearchCluster return RED status");
                 return Result.unhealthy(COMPONENT_NAME, response.getClusterName() + " status is RED");
             default:
                 throw new NotImplementedException("Un-handled ElasticSearch cluster status");
