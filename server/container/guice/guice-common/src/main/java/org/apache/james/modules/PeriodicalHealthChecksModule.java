@@ -38,6 +38,9 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
+
 public class PeriodicalHealthChecksModule extends AbstractModule {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PeriodicalHealthChecksModule.class);
@@ -58,6 +61,12 @@ public class PeriodicalHealthChecksModule extends AbstractModule {
             LOGGER.warn(String.format("Could not find '%s' configuration file, using default configuration", FILENAME));
             return PeriodicalHealthChecksConfiguration.DEFAULT_CONFIGURATION;
         }
+    }
+
+    @Singleton
+    @Provides
+    Scheduler scheduler() {
+        return Schedulers.elastic();
     }
 
     @ProvidesIntoSet
