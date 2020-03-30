@@ -64,6 +64,11 @@ public class PeriodicalHealthChecks implements Startable {
             .subscribe();
     }
 
+    @PreDestroy
+    public void stop() {
+        disposable.dispose();
+    }
+
     private void logResult(Result result) {
         switch (result.getStatus()) {
             case HEALTHY:
@@ -86,11 +91,8 @@ public class PeriodicalHealthChecks implements Startable {
         if (triggeringValue instanceof Result) {
             Result result = (Result) triggeringValue;
             LOGGER.error("HealthCheck error for: {}, Cause: {}", result.getComponentName(), error);
+            return;
         }
-    }
-
-    @PreDestroy
-    public void stop() {
-        disposable.dispose();
+        LOGGER.error("HealthCheck error. Triggering value: {}, Cause: {}", triggeringValue, error);
     }
 }
