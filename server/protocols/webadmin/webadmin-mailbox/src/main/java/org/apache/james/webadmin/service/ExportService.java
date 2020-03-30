@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import javax.inject.Inject;
 
@@ -39,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
+import com.google.common.collect.Lists;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -53,14 +55,18 @@ public class ExportService {
     }
 
     public static class Progress {
-        private Stage stage;
+        private final ConcurrentLinkedDeque<Stage> stages;
+
+        public Progress() {
+            this.stages = new ConcurrentLinkedDeque<>(Lists.newArrayList(Stage.STARTING));
+        }
 
         public Stage getStage() {
-            return stage;
+            return stages.getLast();
         }
 
         public void setStage(Stage stage) {
-            this.stage = stage;
+            this.stages.add(stage);
         }
     }
 
