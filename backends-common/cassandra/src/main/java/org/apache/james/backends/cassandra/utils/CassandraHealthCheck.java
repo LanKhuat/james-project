@@ -56,7 +56,7 @@ public class CassandraHealthCheck implements HealthCheck {
             session.execute(SAMPLE_QUERY);
             return Result.healthy(COMPONENT_NAME);
         } catch (Exception e) {
-            return Result.unhealthy(COMPONENT_NAME, e.getMessage(), e);
+            return Result.unhealthy(COMPONENT_NAME, "Error checking Cassandra backend", e);
         }
     }
 }

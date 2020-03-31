@@ -51,7 +51,7 @@ public class EventDeadLettersHealthCheck implements HealthCheck {
 
             return Result.healthy(COMPONENT_NAME);
         } catch (Exception e) {
-            return Result.unhealthy(COMPONENT_NAME, e.getMessage(), e);
+            return Result.unhealthy(COMPONENT_NAME, "Error checking EventDeadLettersHealthCheck", e);
         }
     }
 }

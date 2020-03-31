@@ -49,7 +49,7 @@ public class JPAHealthCheck implements HealthCheck {
                 return healthy(componentName());
             }
         } catch (IllegalStateException stateException) {
-            return unhealthy(componentName(), stateException.getMessage(), stateException);
+            return unhealthy(componentName(), "EntityManagerFactory or EntityManager thrown an IllegalStateException, the connection is unhealthy", stateException);
         }
 
         return unhealthy(componentName(), "entityManager is not open");
