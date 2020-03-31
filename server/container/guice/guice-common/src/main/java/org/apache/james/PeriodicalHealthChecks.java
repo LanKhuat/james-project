@@ -19,7 +19,6 @@
 
 package org.apache.james;
 
-import java.time.Duration;
 import java.util.Set;
 
 import javax.annotation.PreDestroy;
@@ -42,23 +41,28 @@ public class PeriodicalHealthChecks implements Startable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PeriodicalHealthChecks.class);
     private final Set<HealthCheck> healthChecks;
     private final Scheduler scheduler;
-    private final Duration period;
+    private final PeriodicalHealthChecksConfiguration configuration;
     private Disposable disposable;
 
     @Inject
-    PeriodicalHealthChecks(Set<HealthCheck> healthChecks, Scheduler scheduler, PeriodicalHealthChecksConfiguration config) {
+    PeriodicalHealthChecks(Set<HealthCheck> healthChecks, PeriodicalHealthChecksConfiguration configuration) {
+        this.healthChecks = healthChecks;
+        this.scheduler = Schedulers.elastic();
+        this.configuration = configuration;
+    }
+
+    PeriodicalHealthChecks(Set<HealthCheck> healthChecks, Scheduler scheduler, PeriodicalHealthChecksConfiguration configuration) {
         this.healthChecks = healthChecks;
         this.scheduler = scheduler;
-        this.period = config.getPeriod();
+        this.configuration = configuration;
     }
 
     public void start() {
-        disposable = Flux.interval(period, scheduler)
+        disposable = Flux.interval(configuration.getPeriod(), scheduler)
             .flatMap(any -> Flux.fromIterable(healthChecks)
                 .flatMap(healthCheck ->
                     Mono.fromCallable(healthCheck::check)))
-                .flatMap(result ->
-                    Mono.fromRunnable(() -> logResult(result)))
+            .doOnNext(this::logResult)
             .onErrorContinue(this::logError)
             .subscribeOn(Schedulers.elastic())
             .subscribe();
