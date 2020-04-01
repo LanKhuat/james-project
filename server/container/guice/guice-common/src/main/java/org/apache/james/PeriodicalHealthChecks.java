@@ -74,12 +74,8 @@ public class PeriodicalHealthChecks implements Startable {
 
     private void logResult(Result result) {
         switch (result.getStatus()) {
-            case HEALTHY:
-                break;
             case DEGRADED:
-                LOGGER.warn("DEGRADED: {} : {}",
-                    result.getComponentName().getName(),
-                    result.getCause().orElse(""));
+                logDegraded(result);
                 break;
             case UNHEALTHY:
                 logUnhealthy(result);
@@ -95,6 +91,19 @@ public class PeriodicalHealthChecks implements Startable {
                 result.getError().get());
         } else {
             LOGGER.error("UNHEALTHY: {} : {}",
+                result.getComponentName().getName(),
+                result.getCause());
+        }
+    }
+
+    private void logDegraded(Result result) {
+        if (result.getError().isPresent()) {
+            LOGGER.error("DEGRADED: {} : {}",
+                result.getComponentName().getName(),
+                result.getCause(),
+                result.getError().get());
+        } else {
+            LOGGER.error("DEGRADED: {} : {}",
                 result.getComponentName().getName(),
                 result.getCause());
         }
