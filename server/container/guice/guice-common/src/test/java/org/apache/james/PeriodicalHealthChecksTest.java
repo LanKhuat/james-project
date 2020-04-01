@@ -20,6 +20,7 @@
 package org.apache.james;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,15 +36,42 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 public class PeriodicalHealthChecksTest {
+    @FunctionalInterface
+    interface TestingHealthCheck extends HealthCheck {
+        ComponentName COMPONENT_NAME = new ComponentName("testing");
+
+        Result check();
+
+        default ComponentName componentName() {
+            return COMPONENT_NAME;
+        }
+    }
 
     private static final long PERIOD = 10;
     private static final int EXPECTED_INVOKED_TIME = 10;
+
+    public static ListAppender<ILoggingEvent> getListAppenderForClass(Class clazz) {
+        Logger logger = (Logger) LoggerFactory.getLogger(clazz);
+
+        ListAppender<ILoggingEvent> loggingEventListAppender = new ListAppender<>();
+        loggingEventListAppender.start();
+
+        logger.addAppender(loggingEventListAppender);
+
+        return loggingEventListAppender;
+    }
+
     private HealthCheck mockHealthCheck1;
     private HealthCheck mockHealthCheck2;
     private VirtualTimeScheduler scheduler;
@@ -73,6 +101,56 @@ public class PeriodicalHealthChecksTest {
 
         scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
         verify(mockHealthCheck1, atLeast(1)).check();
+    }
+
+    @Test
+    void startShouldLogPeriodicallyWhenUnhealthy() {
+        ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
+
+        TestingHealthCheck unhealthy = () -> Result.unhealthy(TestingHealthCheck.COMPONENT_NAME, "cause");
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+            scheduler,
+            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+        testee.start();
+
+        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        assertThat(loggingEvents.list).hasSize(1)
+            .allSatisfy(loggingEvent -> {
+                assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+                assertThat(loggingEvent.getFormattedMessage()).isEqualTo("UNHEALTHY: testing : Optional[cause]");
+            });
+    }
+
+    @Test
+    void startShouldLogPeriodicallyWhenDegraded() {
+        ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
+
+        TestingHealthCheck unhealthy = () -> Result.degraded(TestingHealthCheck.COMPONENT_NAME, "cause");
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+            scheduler,
+            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+        testee.start();
+
+        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        assertThat(loggingEvents.list).hasSize(1)
+            .allSatisfy(loggingEvent -> {
+                assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+                assertThat(loggingEvent.getFormattedMessage()).isEqualTo("DEGRADED: testing : Optional[cause]");
+            });
+    }
+
+    @Test
+    void startShouldNotLogHealth() {
+        ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
+
+        TestingHealthCheck unhealthy = () -> Result.healthy(TestingHealthCheck.COMPONENT_NAME);
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+            scheduler,
+            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+        testee.start();
+
+        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        assertThat(loggingEvents.list).hasSize(0);
     }
 
     @Test
