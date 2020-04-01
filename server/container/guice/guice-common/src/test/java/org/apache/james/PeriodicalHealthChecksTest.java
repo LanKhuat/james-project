@@ -44,6 +44,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import reactor.core.publisher.Mono;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 public class PeriodicalHealthChecksTest {
@@ -100,7 +101,7 @@ public class PeriodicalHealthChecksTest {
         testee.start();
 
         scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
-        verify(mockHealthCheck1, atLeast(1)).check();
+        verify(mockHealthCheck1, atLeast(1)).checkReactive();
     }
 
     @Test
@@ -158,7 +159,7 @@ public class PeriodicalHealthChecksTest {
         testee.start();
 
         scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
-        verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).check();
+        verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).checkReactive();
     }
 
     @Test
@@ -166,17 +167,17 @@ public class PeriodicalHealthChecksTest {
         testee.start();
 
         scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
-        verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).check();
-        verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).check();
+        verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).checkReactive();
+        verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).checkReactive();
     }
 
     @Test
     void startShouldCallRemainingHealthChecksWhenAHealthCheckThrows() {
-        when(mockHealthCheck1.check()).thenThrow(new RuntimeException());
+        when(mockHealthCheck1.checkReactive()).thenReturn(Mono.error(new RuntimeException()));
 
         testee.start();
 
         scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
-        verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).check();
+        verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).checkReactive();
     }
 }
