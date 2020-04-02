@@ -65,7 +65,8 @@ public class PeriodicalHealthChecksConfigurationTest {
         assertThatThrownBy(() -> PeriodicalHealthChecksConfiguration.builder()
             .period(Duration.ofSeconds(1))
             .build())
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("'period' must be equal or greater than 10s");
     }
 
     @Test

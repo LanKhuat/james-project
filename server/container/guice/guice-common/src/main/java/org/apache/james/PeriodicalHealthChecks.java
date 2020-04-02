@@ -101,14 +101,7 @@ public class PeriodicalHealthChecks implements Startable {
     }
 
     private void logError(Throwable error, Object triggeringValue) {
-        if (triggeringValue instanceof Result) {
-            Result result = (Result) triggeringValue;
-            LOGGER.error("HealthCheck error for: {}, Cause: {}",
-                result.getComponentName(),
-                error);
-            return;
-        }
-        LOGGER.error("HealthCheck error. Triggering value: {}, Cause: {}",
+        LOGGER.error("HealthCheck error. Triggering value: {}",
             triggeringValue,
             error);
     }

@@ -54,7 +54,7 @@ public class PeriodicalHealthChecksConfiguration {
 
             PeriodicalHealthChecksConfiguration build() {
                 Preconditions.checkArgument(period.compareTo(MINIMAL_HEALTH_CHECK_PERIOD) >= 0,
-                    "'period' must be equal or greater than " + MINIMAL_HEALTH_CHECK_PERIOD.toMillis() + "ms");
+                    "'period' must be equal or greater than " + MINIMAL_HEALTH_CHECK_PERIOD.getSeconds() + "s");
 
                 return new PeriodicalHealthChecksConfiguration(period);
             }
@@ -69,6 +69,14 @@ public class PeriodicalHealthChecksConfiguration {
         return builder()
             .period(getDurationFromConfiguration(configuration))
             .build();
+    }
+
+    private static Duration getDurationFromConfiguration(Configuration configuration) {
+        if (StringUtils.isEmpty(configuration.getString(HEALTH_CHECK_PERIOD))) {
+           return DEFAULT_HEALTH_CHECK_PERIOD;
+        }
+
+        return DurationParser.parse(configuration.getString(HEALTH_CHECK_PERIOD));
     }
 
     private final Duration period;
@@ -97,11 +105,4 @@ public class PeriodicalHealthChecksConfiguration {
         return Objects.hash(period);
     }
 
-    private static Duration getDurationFromConfiguration(Configuration configuration) {
-        if (StringUtils.isEmpty(configuration.getString(HEALTH_CHECK_PERIOD))) {
-           return DEFAULT_HEALTH_CHECK_PERIOD;
-        }
-
-        return DurationParser.parse(configuration.getString(HEALTH_CHECK_PERIOD));
-    }
 }
