@@ -32,7 +32,7 @@ import com.google.common.base.Preconditions;
 public class PeriodicalHealthChecksConfiguration {
 
     private static final String HEALTH_CHECK_PERIOD = "healthcheck.period";
-    private static final Duration DEFAULT_HEALTH_CHECK_PERIOD = Duration.ofSeconds(60);
+    private static final Duration DEFAULT_HEALTH_CHECK_PERIOD = Duration.ofMinutes(1);
     private static final Duration MINIMAL_HEALTH_CHECK_PERIOD = Duration.ofSeconds(10);
     public static final PeriodicalHealthChecksConfiguration DEFAULT_CONFIGURATION = builder()
         .period(DEFAULT_HEALTH_CHECK_PERIOD)
