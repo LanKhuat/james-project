@@ -157,17 +157,23 @@ public class HealthCheckRoutes implements PublicRoutes {
                     result.getComponentName().getName(),
                     result.getCause().orElse(""),
                     result.getError().get());
-                break;
-            }
-
-            LOGGER.error("HealthCheck failed for {} : {}",
+            } else {
+                LOGGER.error("HealthCheck failed for {} : {}",
                     result.getComponentName().getName(),
                     result.getCause().orElse(""));
+            }
             break;
         case DEGRADED:
-            LOGGER.warn("HealthCheck is unstable for {} : {}",
+            if (result.getError().isPresent()) {
+                LOGGER.warn("HealthCheck is unstable for {} : {}",
+                    result.getComponentName().getName(),
+                    result.getCause().orElse(""),
+                    result.getError().get());
+            } else {
+                LOGGER.warn("HealthCheck is unstable for {} : {}",
                     result.getComponentName().getName(),
                     result.getCause().orElse(""));
+            }
             break;
         case HEALTHY:
             // Here only to fix a warning, such cases are already filtered

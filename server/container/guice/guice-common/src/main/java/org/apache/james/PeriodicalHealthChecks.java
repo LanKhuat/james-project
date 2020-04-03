@@ -98,12 +98,12 @@ public class PeriodicalHealthChecks implements Startable {
 
     private void logDegraded(Result result) {
         if (result.getError().isPresent()) {
-            LOGGER.error("DEGRADED: {} : {}",
+            LOGGER.warn("DEGRADED: {} : {}",
                 result.getComponentName().getName(),
                 result.getCause(),
                 result.getError().get());
         } else {
-            LOGGER.error("DEGRADED: {} : {}",
+            LOGGER.warn("DEGRADED: {} : {}",
                 result.getComponentName().getName(),
                 result.getCause());
         }
