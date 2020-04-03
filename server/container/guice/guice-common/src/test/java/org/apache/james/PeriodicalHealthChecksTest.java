@@ -135,7 +135,7 @@ public class PeriodicalHealthChecksTest {
         scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
         assertThat(loggingEvents.list).hasSize(1)
             .allSatisfy(loggingEvent -> {
-                assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+                assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
                 assertThat(loggingEvent.getFormattedMessage()).isEqualTo("DEGRADED: testing : Optional[cause]");
             });
     }
