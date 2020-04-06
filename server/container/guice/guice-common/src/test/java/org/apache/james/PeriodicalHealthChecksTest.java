@@ -48,6 +48,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 public class PeriodicalHealthChecksTest {
+
     @FunctionalInterface
     interface TestingHealthCheck extends HealthCheck {
         ComponentName COMPONENT_NAME = new ComponentName("testing");
@@ -59,7 +60,7 @@ public class PeriodicalHealthChecksTest {
         }
     }
 
-    private static final long PERIOD = 10;
+    private static final Duration PERIOD = Duration.ofSeconds(10);
     private static final int EXPECTED_INVOKED_TIME = 10;
 
     public static ListAppender<ILoggingEvent> getListAppenderForClass(Class clazz) {
@@ -88,7 +89,7 @@ public class PeriodicalHealthChecksTest {
         scheduler = VirtualTimeScheduler.getOrSet();
         testee = new PeriodicalHealthChecks(ImmutableSet.of(mockHealthCheck1, mockHealthCheck2),
             scheduler,
-            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+            new PeriodicalHealthChecksConfiguration(PERIOD));
     }
 
     @AfterEach
@@ -100,7 +101,7 @@ public class PeriodicalHealthChecksTest {
     void startShouldCallHealthCheckAtLeastOnce() {
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        scheduler.advanceTimeBy(PERIOD);
         verify(mockHealthCheck1, atLeast(1)).checkReactive();
     }
 
@@ -111,10 +112,10 @@ public class PeriodicalHealthChecksTest {
         TestingHealthCheck unhealthy = () -> Result.unhealthy(TestingHealthCheck.COMPONENT_NAME, "cause");
         testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
             scheduler,
-            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+            new PeriodicalHealthChecksConfiguration(PERIOD));
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        scheduler.advanceTimeBy(PERIOD);
         assertThat(loggingEvents.list).hasSize(1)
             .allSatisfy(loggingEvent -> {
                 assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
@@ -129,10 +130,10 @@ public class PeriodicalHealthChecksTest {
         TestingHealthCheck unhealthy = () -> Result.degraded(TestingHealthCheck.COMPONENT_NAME, "cause");
         testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
             scheduler,
-            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+            new PeriodicalHealthChecksConfiguration(PERIOD));
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        scheduler.advanceTimeBy(PERIOD);
         assertThat(loggingEvents.list).hasSize(1)
             .allSatisfy(loggingEvent -> {
                 assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
@@ -141,16 +142,16 @@ public class PeriodicalHealthChecksTest {
     }
 
     @Test
-    void startShouldNotLogHealth() {
+    void startShouldNotLogWhenHealthy() {
         ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
 
         TestingHealthCheck unhealthy = () -> Result.healthy(TestingHealthCheck.COMPONENT_NAME);
         testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
             scheduler,
-            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+            new PeriodicalHealthChecksConfiguration(PERIOD));
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        scheduler.advanceTimeBy(PERIOD);
         assertThat(loggingEvents.list).hasSize(0);
     }
 
@@ -158,7 +159,7 @@ public class PeriodicalHealthChecksTest {
     void startShouldCallHealthCheckMultipleTimes() {
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
+        scheduler.advanceTimeBy(PERIOD.multipliedBy(EXPECTED_INVOKED_TIME));
         verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).checkReactive();
     }
 
@@ -166,7 +167,7 @@ public class PeriodicalHealthChecksTest {
     void startShouldCallAllHealthChecks() {
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
+        scheduler.advanceTimeBy(PERIOD.multipliedBy(EXPECTED_INVOKED_TIME));
         verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).checkReactive();
         verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).checkReactive();
     }
@@ -177,7 +178,7 @@ public class PeriodicalHealthChecksTest {
 
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
+        scheduler.advanceTimeBy(PERIOD.multipliedBy(EXPECTED_INVOKED_TIME));
         verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).checkReactive();
     }
 }
