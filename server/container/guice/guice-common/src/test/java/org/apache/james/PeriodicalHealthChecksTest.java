@@ -20,6 +20,7 @@
 package org.apache.james;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,15 +36,43 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import reactor.core.publisher.Mono;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 public class PeriodicalHealthChecksTest {
 
-    private static final long PERIOD = 10;
+    @FunctionalInterface
+    interface TestingHealthCheck extends HealthCheck {
+        ComponentName COMPONENT_NAME = new ComponentName("testing");
+
+        Mono<Result> check();
+
+        default ComponentName componentName() {
+            return COMPONENT_NAME;
+        }
+    }
+
+    public static ListAppender<ILoggingEvent> getListAppenderForClass(Class clazz) {
+        Logger logger = (Logger) LoggerFactory.getLogger(clazz);
+
+        ListAppender<ILoggingEvent> loggingEventListAppender = new ListAppender<>();
+        loggingEventListAppender.start();
+
+        logger.addAppender(loggingEventListAppender);
+
+        return loggingEventListAppender;
+    }
+
+
+    private static final Duration PERIOD = Duration.ofSeconds(10);
     private static final int EXPECTED_INVOKED_TIME = 10;
     private HealthCheck mockHealthCheck1;
     private HealthCheck mockHealthCheck2;
@@ -60,27 +89,77 @@ public class PeriodicalHealthChecksTest {
         scheduler = VirtualTimeScheduler.getOrSet();
         testee = new PeriodicalHealthChecks(ImmutableSet.of(mockHealthCheck1, mockHealthCheck2),
             scheduler,
-            new PeriodicalHealthChecksConfiguration(Duration.ofSeconds(PERIOD)));
+            new PeriodicalHealthChecksConfiguration(PERIOD));
     }
 
     @AfterEach
     void tearDown() {
         testee.stop();
     }
-    
+
     @Test
     void startShouldCallHealthCheckAtLeastOnce() {
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD));
+        scheduler.advanceTimeBy(PERIOD);
         verify(mockHealthCheck1, atLeast(1)).check();
+    }
+
+    @Test
+    void startShouldLogPeriodicallyWhenUnhealthy() {
+        ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
+
+        TestingHealthCheck unhealthy = () -> Mono.just(Result.unhealthy(TestingHealthCheck.COMPONENT_NAME, "cause"));
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+            scheduler,
+            new PeriodicalHealthChecksConfiguration(PERIOD));
+        testee.start();
+
+        scheduler.advanceTimeBy(PERIOD);
+        assertThat(loggingEvents.list).hasSize(1)
+            .allSatisfy(loggingEvent -> {
+                assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+                assertThat(loggingEvent.getFormattedMessage()).isEqualTo("UNHEALTHY: testing : Optional[cause]");
+            });
+    }
+
+    @Test
+    void startShouldLogPeriodicallyWhenDegraded() {
+        ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
+
+        TestingHealthCheck unhealthy = () -> Mono.just(Result.degraded(TestingHealthCheck.COMPONENT_NAME, "cause"));
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+            scheduler,
+            new PeriodicalHealthChecksConfiguration(PERIOD));
+        testee.start();
+
+        scheduler.advanceTimeBy(PERIOD);
+        assertThat(loggingEvents.list).hasSize(1)
+            .allSatisfy(loggingEvent -> {
+                assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
+                assertThat(loggingEvent.getFormattedMessage()).isEqualTo("DEGRADED: testing : cause");
+            });
+    }
+
+    @Test
+    void startShouldNotLogWhenHealthy() {
+        ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
+
+        TestingHealthCheck unhealthy = () -> Mono.just(Result.healthy(TestingHealthCheck.COMPONENT_NAME));
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+            scheduler,
+            new PeriodicalHealthChecksConfiguration(PERIOD));
+        testee.start();
+
+        scheduler.advanceTimeBy(PERIOD);
+        assertThat(loggingEvents.list).hasSize(0);
     }
 
     @Test
     void startShouldCallHealthCheckMultipleTimes() {
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
+        scheduler.advanceTimeBy(PERIOD.multipliedBy(EXPECTED_INVOKED_TIME));
         verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).check();
     }
 
@@ -88,18 +167,18 @@ public class PeriodicalHealthChecksTest {
     void startShouldCallAllHealthChecks() {
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
+        scheduler.advanceTimeBy(PERIOD.multipliedBy(EXPECTED_INVOKED_TIME));
         verify(mockHealthCheck1, times(EXPECTED_INVOKED_TIME)).check();
         verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).check();
     }
 
     @Test
     void startShouldCallRemainingHealthChecksWhenAHealthCheckThrows() {
-        when(mockHealthCheck1.check()).thenReturn(Mono.error(RuntimeException::new));
+        when(mockHealthCheck1.check()).thenReturn(Mono.error(new RuntimeException()));
 
         testee.start();
 
-        scheduler.advanceTimeBy(Duration.ofSeconds(PERIOD * EXPECTED_INVOKED_TIME));
+        scheduler.advanceTimeBy(PERIOD.multipliedBy(EXPECTED_INVOKED_TIME));
         verify(mockHealthCheck2, times(EXPECTED_INVOKED_TIME)).check();
     }
 }
