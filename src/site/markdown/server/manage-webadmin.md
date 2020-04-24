@@ -720,8 +720,8 @@ BOB cannot read the message via IMAP
 
 BOB marks a message as SEEN
 The denormalization process fails
-The message is SEEN in JMAP
-The message is UNSEEN in IMAP
+The message is SEEN via JMAP
+The message is UNSEEN via IMAP
 ```
 
 [More details about endpoints returning a task](#Endpoints_returning_a_task).
