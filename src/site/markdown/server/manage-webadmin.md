@@ -708,7 +708,7 @@ curl -XPOST /messages?task=SolveInconsistencies
 Will schedule a task for fixing message inconsistencies created by the message denormalization process. 
 
 Messages are denormalized and stored in separated data tables in Cassandra, so they can be accessed 
-by their unique identifier or mailbox identifier & unique identifier (within that mailbox) through different protocols. 
+by their unique identifier or mailbox identifier & local mailbox identifier through different protocols. 
 
 Failure in the denormalization process will lead to inconsistencies, for example:
 
@@ -3629,4 +3629,3 @@ Response codes :
 
  - 201: the taskId of the created task
  - 400: Invalid action argument for performing operation on mappings data
-
