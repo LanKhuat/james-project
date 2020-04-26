@@ -33,7 +33,6 @@ import org.apache.james.blob.api.MetricableBlobStore;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
-import org.apache.james.blob.union.HybridBlobStore;
 import org.apache.james.modules.mailbox.ConfigurationComponent;
 import org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule;
 import org.apache.james.utils.PropertiesProvider;
@@ -75,35 +74,16 @@ public class BlobStoreChoosingModule extends AbstractModule {
     @Singleton
     BlobStore provideBlobStore(BlobStoreChoosingConfiguration choosingConfiguration,
                                Provider<CassandraBlobStore> cassandraBlobStoreProvider,
-                               Provider<ObjectStorageBlobStore> objectStorageBlobStoreProvider,
-                               HybridBlobStore.Configuration hybridBlobStoreConfiguration) {
+                               Provider<ObjectStorageBlobStore> objectStorageBlobStoreProvider) {
 
         switch (choosingConfiguration.getImplementation()) {
             case OBJECTSTORAGE:
                 return objectStorageBlobStoreProvider.get();
             case CASSANDRA:
                 return cassandraBlobStoreProvider.get();
-            case HYBRID:
-                return HybridBlobStore.builder()
-                    .lowCost(objectStorageBlobStoreProvider.get())
-                    .highPerformance(cassandraBlobStoreProvider.get())
-                    .configuration(hybridBlobStoreConfiguration)
-                    .build();
             default:
                 throw new RuntimeException(String.format("can not get the right blobstore provider with configuration %s",
                     choosingConfiguration.toString()));
-        }
-    }
-
-    @Provides
-    @Singleton
-    @VisibleForTesting
-    HybridBlobStore.Configuration providesHybridBlobStoreConfiguration(PropertiesProvider propertiesProvider) {
-        try {
-            Configuration configuration = propertiesProvider.getConfigurations(ConfigurationComponent.NAMES);
-            return HybridBlobStore.Configuration.from(configuration);
-        } catch (FileNotFoundException | ConfigurationException e) {
-            return HybridBlobStore.Configuration.DEFAULT;
         }
     }
 }

@@ -33,8 +33,7 @@ public class BlobStoreChoosingConfiguration {
 
     public enum BlobStoreImplName {
         CASSANDRA("cassandra"),
-        OBJECTSTORAGE("objectstorage"),
-        HYBRID("hybrid");
+        OBJECTSTORAGE("objectstorage");
 
         static String supportedImplNames() {
             return Stream.of(BlobStoreImplName.values())
@@ -80,10 +79,6 @@ public class BlobStoreChoosingConfiguration {
 
     public static BlobStoreChoosingConfiguration objectStorage() {
         return new BlobStoreChoosingConfiguration(BlobStoreImplName.OBJECTSTORAGE);
-    }
-
-    public static BlobStoreChoosingConfiguration hybrid() {
-        return new BlobStoreChoosingConfiguration(BlobStoreImplName.HYBRID);
     }
 
     private final BlobStoreImplName implementation;
