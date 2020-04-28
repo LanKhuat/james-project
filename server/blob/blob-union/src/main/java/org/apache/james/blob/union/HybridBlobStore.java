@@ -37,6 +37,11 @@ import com.google.common.base.Preconditions;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * Will be removed in future release.
+ * Prefer using CachedBlobStore.
+ */
+@Deprecated
 public class HybridBlobStore implements BlobStore {
     @FunctionalInterface
     public interface RequireLowCost {
