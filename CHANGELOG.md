@@ -56,6 +56,9 @@ of tasks being currently executed.
 - JAMES-2964 Forbid to create User quota/ Domain quota/ Global quota using negative number
 - JAMES-3074 Fixing UidValidity generation, sanitizing of invalid values upon reads. Read upgrade instructions.
 
+### Deprecated
+- HybridBlobStore. This will be removed after 3.5 release. 
+
 ### Removed
 - Classes marked as deprecated whose removal was planned after 3.4.0 release (See JAMES-2703). This includes:
   - SieveDefaultRepository. Please use SieveFileRepository instead.
