@@ -57,7 +57,7 @@ of tasks being currently executed.
 - JAMES-3074 Fixing UidValidity generation, sanitizing of invalid values upon reads. Read upgrade instructions.
 
 ### Deprecated
-- HybridBlobStore. This will be removed after 3.5 release. 
+- HybridBlobStore. This will be removed after 3.6.0 release. 
 
 ### Removed
 - Classes marked as deprecated whose removal was planned after 3.4.0 release (See JAMES-2703). This includes:
