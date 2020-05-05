@@ -358,16 +358,16 @@ class ConsistencyTasksIntegrationTest {
         }
 
         // schema version 6 or higher required to run solve message inconsistencies task
-        String taskId = with().post(UPGRADE_TO_LATEST_VERSION)
+        String upgradeTaskId = with().post(UPGRADE_TO_LATEST_VERSION)
             .jsonPath()
             .get("taskId");
 
         with()
-            .get("/tasks/" + taskId + "/await")
+            .get("/tasks/" + upgradeTaskId + "/await")
             .then()
             .body("status", is("completed"));
 
-        taskId = with()
+        String solveInconsistenciesTaskId = with()
             .queryParam("task", "SolveInconsistencies")
             .post("/messages")
             .jsonPath()
@@ -375,7 +375,7 @@ class ConsistencyTasksIntegrationTest {
 
         with()
             .basePath(TasksRoutes.BASE)
-            .get(taskId + "/await");
+            .get(solveInconsistenciesTaskId + "/await");
 
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(probe.listMessages(mailboxId, BOB))
@@ -422,16 +422,16 @@ class ConsistencyTasksIntegrationTest {
         }
 
         // schema version 6 or higher required to run solve mailbox inconsistencies task
-        String taskId = with().post(UPGRADE_TO_LATEST_VERSION)
+        String upgradeTaskId = with().post(UPGRADE_TO_LATEST_VERSION)
             .jsonPath()
             .get("taskId");
 
         with()
-            .get("/tasks/" + taskId + "/await")
+            .get("/tasks/" + upgradeTaskId + "/await")
         .then()
             .body("status", is("completed"));
 
-        taskId = with()
+        String solveInconsistenciesTaskId = with()
             .header("I-KNOW-WHAT-I-M-DOING", "ALL-SERVICES-ARE-OFFLINE")
             .queryParam("task", "SolveInconsistencies")
             .post("/mailboxes")
@@ -440,7 +440,7 @@ class ConsistencyTasksIntegrationTest {
 
         with()
             .basePath(TasksRoutes.BASE)
-            .get(taskId + "/await");
+            .get(solveInconsistenciesTaskId + "/await");
 
         // The mailbox is removed as it is not in the mailboxDAO source of truth.
         assertThat(probe.listUserMailboxes(BOB.asString()))
@@ -525,16 +525,16 @@ class ConsistencyTasksIntegrationTest {
         ComposedMessageId messageId = probe.appendMessage(BOB.asString(), inbox, APPEND_COMMAND);
 
         // schema version 6 or higher required to run solve mailbox inconsistencies task
-        String taskId = with().post(UPGRADE_TO_LATEST_VERSION)
+        String upgradeTaskId = with().post(UPGRADE_TO_LATEST_VERSION)
             .jsonPath()
             .get("taskId");
 
         with()
-            .get("/tasks/" + taskId + "/await")
+            .get("/tasks/" + upgradeTaskId + "/await")
             .then()
             .body("status", is("completed"));
 
-        taskId = with()
+        String solveInconsistenciesTaskId = with()
             .queryParam("task", "SolveInconsistencies")
             .post("/messages")
             .jsonPath()
@@ -542,7 +542,7 @@ class ConsistencyTasksIntegrationTest {
 
         with()
             .basePath(TasksRoutes.BASE)
-            .get(taskId + "/await");
+            .get(solveInconsistenciesTaskId + "/await");
 
         TestingSessionProbe testingSessionProbe = server.getProbe(TestingSessionProbe.class);
 
