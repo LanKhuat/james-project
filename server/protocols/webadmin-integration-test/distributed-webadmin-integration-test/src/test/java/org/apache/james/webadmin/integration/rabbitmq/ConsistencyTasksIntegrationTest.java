@@ -49,6 +49,7 @@ import org.apache.james.backends.cassandra.Scenario.Barrier;
 import org.apache.james.backends.cassandra.TestingSession;
 import org.apache.james.backends.cassandra.init.SessionWithInitializedTablesFactory;
 import org.apache.james.junit.categories.BasicFeature;
+import org.apache.james.mailbox.MessageManager.AppendCommand;
 import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageIdToImapUidDAO;
 import org.apache.james.mailbox.events.RetryBackoffConfiguration;
@@ -164,6 +165,11 @@ class ConsistencyTasksIntegrationTest {
     private static final byte[] MESSAGE_CONTENT_AS_BYTES = MESSAGE_CONTENT.getBytes(StandardCharsets.UTF_8);
     private static final Date DATE = new Date();
     private static final Flags FLAGS = new Flags(Flags.Flag.SEEN);
+    private static final AppendCommand APPEND_COMMAND = AppendCommand.builder()
+        .withFlags(FLAGS)
+        .withInternalDate(DATE)
+        .notRecent()
+        .build(MESSAGE_CONTENT_AS_BYTES);
 
     private DataProbe dataProbe;
 
@@ -260,8 +266,7 @@ class ConsistencyTasksIntegrationTest {
             .whenQueryStartsWith("INSERT INTO messageCounter (nextUid,mailboxId)"));
 
         try {
-            probe.appendMessage(BOB.asString(), inbox,
-                new ByteArrayInputStream(MESSAGE_CONTENT_AS_BYTES), new Date(), false, FLAGS);
+            probe.appendMessage(BOB.asString(), inbox, APPEND_COMMAND);
         } catch (Exception e) {
             // Expected to fail
         }
@@ -303,9 +308,11 @@ class ConsistencyTasksIntegrationTest {
                     .times(1)
                     .whenQueryStartsWith(updatedQuotaQueryString));
 
-        probe.appendMessage(BOB.asString(), inbox,
-            new ByteArrayInputStream(MESSAGE_CONTENT_AS_BYTES), DATE,
-            !IS_RECENT, FLAGS);
+        probe.appendMessage(BOB.asString(), inbox, AppendCommand.builder()
+            .withFlags(FLAGS)
+            .withInternalDate(DATE)
+            .notRecent()
+            .build(MESSAGE_CONTENT_AS_BYTES));
 
         // Await first execution
         barrier1.awaitCaller();
@@ -345,9 +352,7 @@ class ConsistencyTasksIntegrationTest {
             .whenQueryStartsWith("INSERT INTO messageIdTable"));
 
         try {
-            probe.appendMessage(BOB.asString(), inbox,
-                new ByteArrayInputStream(MESSAGE_CONTENT_AS_BYTES), DATE,
-                !IS_RECENT, FLAGS);
+            probe.appendMessage(BOB.asString(), inbox, APPEND_COMMAND);
         } catch (Exception e) {
             // Failure is expected
         }
@@ -375,7 +380,7 @@ class ConsistencyTasksIntegrationTest {
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(probe.listMessages(mailboxId, BOB))
                 .hasSize(1);
-            
+
             softly.assertThat(probe.listMessages(mailboxId, BOB))
                 .isEqualTo(testingProbe.listMessagesInTruthTable());
         });
@@ -449,8 +454,7 @@ class ConsistencyTasksIntegrationTest {
         probe.createMailbox(inbox);
 
         try {
-            probe.appendMessage(BOB.asString(), inbox,
-                new ByteArrayInputStream(MESSAGE_CONTENT_AS_BYTES), DATE, false, FLAGS);
+            probe.appendMessage(BOB.asString(), inbox, APPEND_COMMAND);
         } catch (Exception e) {
             // Expected to fail
         }
@@ -487,9 +491,7 @@ class ConsistencyTasksIntegrationTest {
                     .times(1)
                     .whenQueryStartsWith(updatedQuotaQueryString));
 
-        probe.appendMessage(BOB.asString(), inbox,
-            new ByteArrayInputStream(MESSAGE_CONTENT_AS_BYTES), DATE,
-            !IS_RECENT, FLAGS);
+        probe.appendMessage(BOB.asString(), inbox, APPEND_COMMAND);
 
         // Await first execution
         barrier.awaitCaller();
@@ -520,9 +522,7 @@ class ConsistencyTasksIntegrationTest {
         MailboxPath inbox = MailboxPath.inbox(BOB);
         MailboxId mailboxId = probe.createMailbox(inbox);
 
-        ComposedMessageId messageId = probe.appendMessage(BOB.asString(), inbox,
-            new ByteArrayInputStream(MESSAGE_CONTENT_AS_BYTES), DATE,
-            !IS_RECENT, FLAGS);
+        ComposedMessageId messageId = probe.appendMessage(BOB.asString(), inbox, APPEND_COMMAND);
 
         // schema version 6 or higher required to run solve mailbox inconsistencies task
         String taskId = with().post(UPGRADE_TO_LATEST_VERSION)
@@ -553,6 +553,5 @@ class ConsistencyTasksIntegrationTest {
             softly.assertThat(probe.listMessages(mailboxId, BOB))
                 .containsExactly(messageId);
         });
-
     }
 }
