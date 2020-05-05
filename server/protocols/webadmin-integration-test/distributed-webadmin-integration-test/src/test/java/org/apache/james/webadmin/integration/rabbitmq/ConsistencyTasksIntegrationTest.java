@@ -372,8 +372,13 @@ class ConsistencyTasksIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(probe.listMessages(mailboxId, BOB))
-            .isEqualTo(testingProbe.listMessagesInTruthTable());
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(probe.listMessages(mailboxId, BOB))
+                .hasSize(1);
+            
+            softly.assertThat(probe.listMessages(mailboxId, BOB))
+                .isEqualTo(testingProbe.listMessagesInTruthTable());
+        });
     }
 
     @Test
