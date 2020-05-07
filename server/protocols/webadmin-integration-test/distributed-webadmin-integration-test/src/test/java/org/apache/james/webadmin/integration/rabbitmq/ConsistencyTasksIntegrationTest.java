@@ -167,6 +167,7 @@ class ConsistencyTasksIntegrationTest {
         .withInternalDate(DATE)
         .notRecent()
         .build(MESSAGE_CONTENT);
+    private static final int DAO_DENORMALIZATION_TOTAL_TRIES = 6;
 
     private DataProbe dataProbe;
 
@@ -226,7 +227,7 @@ class ConsistencyTasksIntegrationTest {
 
         server.getProbe(TestingSessionProbe.class)
             .getTestingSession().registerScenario(fail()
-            .times(6) // Insertion in the DAO is retried 5 times before it fails
+            .times(DAO_DENORMALIZATION_TOTAL_TRIES)
             .whenQueryStartsWith("INSERT INTO mailbox (id,name,uidvalidity,mailboxbase)"));
 
         try {
@@ -351,7 +352,7 @@ class ConsistencyTasksIntegrationTest {
 
         TestingSessionProbe testingProbe = server.getProbe(TestingSessionProbe.class);
         testingProbe.getTestingSession().registerScenario(fail()
-            .times(6) // Insertion in the DAO is retried 5 times before it fails
+            .times(DAO_DENORMALIZATION_TOTAL_TRIES)
             .whenQueryStartsWith("INSERT INTO messageIdTable"));
 
         try {
