@@ -38,10 +38,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
-
-import javax.mail.Flags;
 
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
@@ -158,8 +155,6 @@ class ConsistencyTasksIntegrationTest {
     private static final String MESSAGE = "Subject: test\r\n" +
         "\r\n" +
         "testmail";
-    private static final Date DATE = new Date();
-    private static final Flags FLAGS = new Flags(Flags.Flag.SEEN);
     private static final String JAMES_SERVER_HOST = "127.0.0.1";
     private static final String TEST_MAILBOX = "TEST";
 
@@ -172,6 +167,8 @@ class ConsistencyTasksIntegrationTest {
             .addDomain(DOMAIN)
             .addUser(ALICE.asString(), ALICE_PASSWORD)
             .addUser(BOB.asString(), BOB_PASSWORD);
+
+        guiceJamesServer.getProbe(QuotaProbesImpl.class).setGlobalMaxMessageCount(QuotaCountLimit.count(50));
 
         WebAdminGuiceProbe webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminGuiceProbe.getWebAdminPort())
@@ -294,8 +291,6 @@ class ConsistencyTasksIntegrationTest {
 
     @Test
     void shouldRecomputeQuotas(GuiceJamesServer server) throws Exception {
-        server.getProbe(QuotaProbesImpl.class).setGlobalMaxMessageCount(QuotaCountLimit.count(50));
-
         Barrier barrier1 = new Barrier();
         Barrier barrier2 = new Barrier();
         String updatedQuotaQueryString = "UPDATE currentQuota SET messageCount=messageCount+?,storage=storage+? WHERE quotaRoot=?;";
@@ -336,12 +331,9 @@ class ConsistencyTasksIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(
-            imapMessageReader.getQuotaRoot(MailboxConstants.INBOX))
-            .startsWith(String.format("* QUOTAROOT \"INBOX\" #private&%s\r\n* QUOTA #private&%s (MESSAGE 1 50)",
-                BOB.asString(),
-                BOB.asString()))
-            .endsWith("OK GETQUOTAROOT completed.\r\n");
+        assertThat(imapMessageReader.getQuotaRoot(MailboxConstants.INBOX))
+            .contains("* QUOTAROOT \"INBOX\" #private&bob@domain.tld\r\n" +
+                "* QUOTA #private&bob@domain.tld (MESSAGE 1 50)");
     }
 
     @Test
@@ -475,8 +467,6 @@ class ConsistencyTasksIntegrationTest {
 
     @Test
     void recomputeQuotasShouldSolveNothingWhenNoInconsistencies(GuiceJamesServer server) throws Exception {
-        server.getProbe(QuotaProbesImpl.class).setGlobalMaxMessageCount(QuotaCountLimit.count(50));
-
         Barrier barrier = new Barrier();
         server.getProbe(TestingSessionProbe.class)
             .getTestingSession().registerScenario(
@@ -509,10 +499,8 @@ class ConsistencyTasksIntegrationTest {
             .get(taskId + "/await");
 
         assertThat(imapMessageReader.getQuotaRoot(MailboxConstants.INBOX))
-            .startsWith(String.format("* QUOTAROOT \"INBOX\" %s\r\n* QUOTA %s (MESSAGE 1 50)",
-                "#private&" + BOB.asString(),
-                "#private&" + BOB.asString()))
-            .endsWith("OK GETQUOTAROOT completed.\r\n");
+            .contains("* QUOTAROOT \"INBOX\" #private&bob@domain.tld\r\n" +
+                "* QUOTA #private&bob@domain.tld (MESSAGE 1 50)");
     }
 
     @Test
