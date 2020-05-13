@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -71,6 +72,7 @@ import org.apache.james.webadmin.integration.WebadminIntegrationTestModule;
 import org.apache.james.webadmin.routes.AliasRoutes;
 import org.apache.james.webadmin.routes.CassandraMappingsRoutes;
 import org.apache.james.webadmin.routes.TasksRoutes;
+import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -260,10 +262,8 @@ class ConsistencyTasksIntegrationTest {
             .sendMessageWithHeaders(ALICE.asString(), BOB.asString(), MESSAGE);
 
         Awaitility.await()
-            .timeout(new org.awaitility.Duration(20, TimeUnit.SECONDS))
-            .until(() -> server.getProbe(MailRepositoryProbeImpl.class)
-                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))
-                == 1);
+            .untilAsserted(() -> assertEquals(1, server.getProbe(MailRepositoryProbeImpl.class)
+                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))));
 
         server.getProbe(TestingSessionProbe.class)
             .getTestingSession().registerScenario(executeNormally()
@@ -358,9 +358,8 @@ class ConsistencyTasksIntegrationTest {
             .sendMessageWithHeaders(ALICE.asString(), BOB.asString(), MESSAGE);
 
         Awaitility.await()
-            .until(() -> server.getProbe(MailRepositoryProbeImpl.class)
-                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))
-                == 1);
+            .untilAsserted(() -> assertEquals(1, server.getProbe(MailRepositoryProbeImpl.class)
+                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))));
 
         // When we run solveInconsistenciesTask
         testingProbe.getTestingSession().registerScenario(executeNormally()
