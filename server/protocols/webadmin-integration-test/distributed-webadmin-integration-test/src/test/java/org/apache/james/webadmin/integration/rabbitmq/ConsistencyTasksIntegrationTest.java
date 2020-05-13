@@ -35,7 +35,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -62,9 +61,9 @@ import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.GuiceProbe;
-import org.apache.james.utils.TestIMAPClient;
 import org.apache.james.utils.MailRepositoryProbeImpl;
 import org.apache.james.utils.SMTPMessageSender;
+import org.apache.james.utils.TestIMAPClient;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.integration.WebadminIntegrationTestModule;
@@ -260,8 +259,8 @@ class ConsistencyTasksIntegrationTest {
             .sendMessageWithHeaders(ALICE.asString(), BOB.asString(), MESSAGE);
 
         Awaitility.await()
-            .untilAsserted(() -> assertEquals(1, server.getProbe(MailRepositoryProbeImpl.class)
-                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))));
+            .untilAsserted(() -> assertThat(server.getProbe(MailRepositoryProbeImpl.class)
+                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))).isEqualTo(1));
 
         server.getProbe(TestingSessionProbe.class)
             .getTestingSession().registerScenario(executeNormally()
@@ -356,8 +355,8 @@ class ConsistencyTasksIntegrationTest {
             .sendMessageWithHeaders(ALICE.asString(), BOB.asString(), MESSAGE);
 
         Awaitility.await()
-            .untilAsserted(() -> assertEquals(1, server.getProbe(MailRepositoryProbeImpl.class)
-                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))));
+            .untilAsserted(() -> assertThat(server.getProbe(MailRepositoryProbeImpl.class)
+                .getRepositoryMailCount(MailRepositoryUrl.from("cassandra://var/mail/error/"))).isEqualTo(1));
 
         // When we run solveInconsistenciesTask
         testingProbe.getTestingSession().registerScenario(executeNormally()
