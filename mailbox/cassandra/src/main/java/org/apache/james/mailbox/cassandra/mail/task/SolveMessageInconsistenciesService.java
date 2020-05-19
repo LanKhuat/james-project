@@ -167,7 +167,7 @@ public class SolveMessageInconsistenciesService {
 
     public static class RunningOptions {
 
-        public static final RunningOptions DEFAULT = new RunningOptions(10);
+        public static final RunningOptions DEFAULT = new RunningOptions(100);
 
         private final int messagesPerSecond;
 
@@ -177,7 +177,7 @@ public class SolveMessageInconsistenciesService {
             this.messagesPerSecond = messagesPerSecond;
         }
 
-        public Integer getMessagesPerSecond() {
+        public int getMessagesPerSecond() {
             return this.messagesPerSecond;
         }
     }
@@ -403,7 +403,9 @@ public class SolveMessageInconsistenciesService {
         }
     }
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(SolveMessageInconsistenciesService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolveMessageInconsistenciesService.class);
+    private static final Duration DELAY = Duration.ZERO;
+    private static final Duration PERIOD = Duration.ofSeconds(1);
 
     private final CassandraMessageIdToImapUidDAO messageIdToImapUidDAO;
     private final CassandraMessageIdDAO messageIdDAO;
@@ -422,13 +424,16 @@ public class SolveMessageInconsistenciesService {
     }
 
     private Flux<Task.Result> fixInconsistenciesInImapUid(Context context, RunningOptions runningOptions) {
-        return messageIdToImapUidDAO.retrieveAllMessages()
+        return throttle(messageIdToImapUidDAO.retrieveAllMessages(), runningOptions)
             .doOnNext(any -> context.incrementProcessedImapUidEntries())
-            .windowTimeout(runningOptions.getMessagesPerSecond(), Duration.ofSeconds(1))
-            .zipWith(Flux.interval(Duration.ofSeconds(1)))
-            .flatMap(Tuple2::getT1)
             .flatMap(this::detectInconsistencyInImapUid)
             .flatMap(inconsistency -> inconsistency.fix(context, messageIdToImapUidDAO, messageIdDAO));
+    }
+
+    private Flux<ComposedMessageIdWithMetaData> throttle(Flux<ComposedMessageIdWithMetaData> messages, RunningOptions runningOptions) {
+        return messages.windowTimeout(runningOptions.getMessagesPerSecond(), Duration.ofSeconds(1))
+            .zipWith(Flux.interval(DELAY, PERIOD))
+            .flatMap(Tuple2::getT1);
     }
 
     private Mono<Inconsistency> detectInconsistencyInImapUid(ComposedMessageIdWithMetaData message) {

@@ -326,7 +326,7 @@ public class SolveMessageInconsistenciesServiceTest {
             }
 
             @Test
-            void fixMailboxInconsistenciesShouldUpdateContextWhenFailedToRetrieveImapUidRecord(CassandraCluster cassandra) {
+            void fixMessageInconsistenciesShouldUpdateContextWhenFailedToRetrieveImapUidRecord(CassandraCluster cassandra) {
                 Context context = new Context();
 
                 imapUidDAO.insert(MESSAGE_1).block();
@@ -346,7 +346,7 @@ public class SolveMessageInconsistenciesServiceTest {
             }
 
             @Test
-            void fixMailboxInconsistenciesShouldUpdateContextWhenFailedToRetrieveMessageIdRecord(CassandraCluster cassandra) {
+            void fixMessageInconsistenciesShouldUpdateContextWhenFailedToRetrieveMessageIdRecord(CassandraCluster cassandra) {
                 Context context = new Context();
 
                 imapUidDAO.insert(MESSAGE_1).block();
