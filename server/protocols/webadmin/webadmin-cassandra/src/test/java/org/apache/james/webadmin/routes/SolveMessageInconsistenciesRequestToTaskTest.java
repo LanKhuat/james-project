@@ -111,7 +111,7 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
     void actionRequestParameterShouldBeCompulsory() {
         when()
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
@@ -124,7 +124,7 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
         given()
             .queryParam("action", "")
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
@@ -137,7 +137,7 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
         given()
             .queryParam("action", "invalid")
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
@@ -151,7 +151,7 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
             .queryParam("action", "SolveInconsistencies")
             .queryParam("messagesPerSecond", "abc")
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
@@ -165,7 +165,7 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
             .queryParam("action", "SolveInconsistencies")
             .queryParam("messagesPerSecond", "-1")
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
@@ -174,12 +174,12 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
     }
 
     @Test
-    void postShouldFailWhenmessagesPerSecondIsZero() {
+    void postShouldFailWhenMessagesPerSecondIsZero() {
         given()
             .queryParam("action", "SolveInconsistencies")
             .queryParam("messagesPerSecond", "0")
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
@@ -192,7 +192,7 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
         given()
             .queryParam("action", "SolveInconsistencies")
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.CREATED_201)
             .body("taskId", notNullValue());
     }
@@ -203,7 +203,7 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
             .queryParam("messagesPerSecond", "1")
             .queryParam("action", "SolveInconsistencies")
             .post()
-            .then()
+        .then()
             .statusCode(HttpStatus.CREATED_201)
             .body("taskId", notNullValue());
     }
@@ -213,15 +213,15 @@ public class SolveMessageInconsistenciesRequestToTaskTest {
         String taskId = with()
             .queryParam("action", "SolveInconsistencies")
             .queryParam("messagesPerSecond", "20")
-            .post()
+        .post()
             .jsonPath()
             .get("taskId");
 
         given()
             .basePath(TasksRoutes.BASE)
-            .when()
+        .when()
             .get(taskId + "/await")
-            .then()
+        .then()
             .body("taskId", is(taskId))
             .body("type", is("solve-message-inconsistencies"))
             .body("additionalInformation.runningOptions.messagesPerSecond", is(20));
