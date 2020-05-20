@@ -49,6 +49,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -313,15 +314,17 @@ public class SolveMessageInconsistenciesServiceTest {
                 cassandra.getConf()
                     .registerScenario(fail()
                         .times(1)
-                        .whenQueryStartsWith("INSERT INTO messageIdTable (mailboxId,uid,modSeq,messageId,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags) VALUES (:mailboxId,:uid,:modSeq,d2bee791-7e63-11ea-883c-95b84008f979,:flagAnswered,:flagDeleted,:flagDraft,:flagFlagged,:flagRecent,:flagSeen,:flagUser,:userFlags)"));
+                        .whenQueryStartsWith("INSERT INTO messageIdTable (mailboxId,uid,modSeq,messageId,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags) VALUES (:mailboxId,:uid,:modSeq,:messageId,:flagAnswered,:flagDeleted,:flagDraft,:flagFlagged,:flagRecent,:flagSeen,:flagUser,:userFlags)"));
 
                 testee.fixMessageInconsistencies(new Context(), RunningOptions.DEFAULT).block();
 
                 SoftAssertions.assertSoftly(softly -> {
-                    softly.assertThat(imapUidDAO.retrieve(MESSAGE_ID_2, Optional.of(MAILBOX_ID)).collectList().block())
-                        .containsExactly(MESSAGE_2);
-                    softly.assertThat(messageIdDAO.retrieve(MAILBOX_ID, MESSAGE_UID_2).block().get())
-                        .isEqualTo(MESSAGE_2);
+                    softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
+                        .hasSize(2)
+                        .containsExactlyElementsOf(ImmutableList.of(MESSAGE_1, MESSAGE_2));
+                    softly.assertThat(messageIdDAO.retrieveAllMessages().collectList().block())
+                        .hasSize(1)
+                        .containsAnyElementsOf(ImmutableList.of(MESSAGE_1, MESSAGE_2));
                 });
             }
 
@@ -494,9 +497,10 @@ public class SolveMessageInconsistenciesServiceTest {
 
                 SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
-                        .isEmpty();
+                        .hasSize(0);
                     softly.assertThat(messageIdDAO.retrieveAllMessages().collectList().block())
-                        .containsExactly(MESSAGE_1);
+                        .hasSize(1)
+                        .containsAnyElementsOf(ImmutableList.of(MESSAGE_1, MESSAGE_2));
                 });
             }
 
