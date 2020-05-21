@@ -46,7 +46,8 @@
                 <dt><strong>implementation</strong></dt>
                 <dd>cassandra: use cassandra based BlobStore</dd>
                 <dd>objectstorage: use Swift/AWS S3 based BlobStore</dd>
-                <dd>hybrid (deprecated, use CachedBlobStore instead): Using both objectstorage for unfrequently read or big blobs &amp; cassandra for small, often read blobs</dd>
+                <dd>hybrid (deprecated, use CachedBlobStore instead): Using both objectstorage for unfrequently read or big blobs &amp; cassandra for small, often read blobs.
+                    Introduced to fasten small blob access, its usage could be compared to a cache, but with a sub-optimal implementation (no eviction, default replication factor, no  circuit breaking).</dd>
             </dl>
 
             <subsection name="Hybrid BlobStore size threshold (deprecated)">
