@@ -71,7 +71,7 @@ public class SolveMessageInconsistenciesTaskSerializationTest {
     }
 
     @Test
-    void legacyTaskshouldBeDeserializable() throws Exception {
+    void legacyTaskShouldBeDeserializable() throws Exception {
         SolveMessageInconsistenciesService service = mock(SolveMessageInconsistenciesService.class);
 
         SolveMessageInconsistenciesTask legacyTask = JsonGenericSerializer.forModules(SolveMessageInconsistenciesTaskDTO.module(service))
