@@ -316,15 +316,13 @@ public class SolveMessageInconsistenciesServiceTest {
                         .times(1)
                         .whenQueryStartsWith("INSERT INTO messageIdTable (mailboxId,uid,modSeq,messageId,flagAnswered,flagDeleted,flagDraft,flagFlagged,flagRecent,flagSeen,flagUser,userFlags) VALUES (:mailboxId,:uid,:modSeq,:messageId,:flagAnswered,:flagDeleted,:flagDraft,:flagFlagged,:flagRecent,:flagSeen,:flagUser,:userFlags)"));
 
-                testee.fixMessageInconsistencies(new Context(), RunningOptions.DEFAULT).block();
+                testee.fixMessageInconsistencies(new Context(), new RunningOptions(1)).block();
 
                 SoftAssertions.assertSoftly(softly -> {
-                    softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
-                        .hasSize(2)
-                        .containsExactlyElementsOf(ImmutableList.of(MESSAGE_1, MESSAGE_2));
-                    softly.assertThat(messageIdDAO.retrieveAllMessages().collectList().block())
-                        .hasSize(1)
-                        .containsAnyElementsOf(ImmutableList.of(MESSAGE_1, MESSAGE_2));
+                    softly.assertThat(imapUidDAO.retrieve(MESSAGE_ID_2, Optional.of(MAILBOX_ID)).collectList().block())
+                        .containsExactly(MESSAGE_2);
+                    softly.assertThat(messageIdDAO.retrieve(MAILBOX_ID, MESSAGE_UID_2).block().get())
+                        .isEqualTo(MESSAGE_2);
                 });
             }
 
@@ -493,14 +491,13 @@ public class SolveMessageInconsistenciesServiceTest {
                         .times(1)
                         .whenQueryStartsWith("DELETE FROM messageIdTable WHERE mailboxId=:mailboxId AND uid=:uid;"));
 
-                testee.fixMessageInconsistencies(new Context(), RunningOptions.DEFAULT).block();
+                testee.fixMessageInconsistencies(new Context(), new RunningOptions(1)).block();
 
                 SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(imapUidDAO.retrieveAllMessages().collectList().block())
-                        .hasSize(0);
+                        .isEmpty();
                     softly.assertThat(messageIdDAO.retrieveAllMessages().collectList().block())
-                        .hasSize(1)
-                        .containsAnyElementsOf(ImmutableList.of(MESSAGE_1, MESSAGE_2));
+                        .containsExactly(MESSAGE_1);
                 });
             }
 
