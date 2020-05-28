@@ -583,9 +583,9 @@ Will schedule a task for reIndexing all the mails stored on this James server.
 
 An admin can specify the concurrency that should be used when running the task:
 
- - `messagesPerSecond` rate at which message should be processed per second. Defaults to 50.
+ - `messagesPerSecond` rate at which messages should be processed per second. Default is 50.
 
-This optional parameter must have a strictly positive integer as a value and be passed as query parameters.
+This optional parameter must have a strictly positive integer as a value and be passed as query parameter.
 
 Example:
 
@@ -610,7 +610,7 @@ The scheduled task will have the following type `full-reindexing` and the follow
 
 ##### Fixing previously failed ReIndexing
 
-Will schedule a task for reIndexing all the mails which were fail to index from the ReIndexingAllMails task.
+Will schedule a task for reIndexing all the mails which had failed to be indexed from the ReIndexingAllMails task.
 
 Given `bbdb69c9-082a-44b0-a85a-6e33e74287a5` being a `taskId` generated for a reIndexing tasks
 
@@ -622,9 +622,9 @@ curl -XPOST 'http://ip:port/mailboxes?task=reIndex&reIndexFailedMessagesOf=bbdb6
 
 An admin can specify the concurrency that should be used when running the task:
 
- - `messagesPerSecond` rate at which message should be processed per second. Defaults to 50.
+ - `messagesPerSecond` rate at which messages should be processed per second. Default is 50.
 
-This optional parameter must have a strictly positive integer as a value and be passed as query parameters.
+This optional parameter must have a strictly positive integer as a value and be passed as query parameter.
 
 Example:
 
@@ -668,9 +668,9 @@ Note that 'mailboxId' path parameter needs to be a (implementation dependent) va
 
 An admin can specify the concurrency that should be used when running the task:
 
- - `messagesPerSecond` rate at which message should be processed per second. Defaults to 50.
+ - `messagesPerSecond` rate at which messages should be processed per second. Default is 50.
 
-This optional parameter must have a strictly positive integer as a value and be passed as query parameters.
+This optional parameter must have a strictly positive integer as a value and be passed as query parameter.
 
 Example:
 
@@ -993,9 +993,9 @@ Will schedule a task for reIndexing all the mails in "user@domain.com" mailboxes
  
 An admin can specify the concurrency that should be used when running the task:
 
- - `messagesPerSecond` rate at which message should be processed per second. Defaults to 50.
+ - `messagesPerSecond` rate at which messages should be processed per second. Default is 50.
 
-This optional parameter must have a strictly positive integer as a value and be passed as query parameters.
+This optional parameter must have a strictly positive integer as a value and be passed as query parameter.
 
 Example:
 
