@@ -44,6 +44,7 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.task.Task;
 import org.apache.james.task.Task.Result;
+import org.apache.james.util.ReactorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,6 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 public class ReIndexerPerformer {
     private static class ReIndexingEntry {
@@ -206,8 +206,9 @@ public class ReIndexerPerformer {
     }
 
     private Mono<Task.Result> reIndexMessages(Flux<ReIndexingEntry> entriesToIndex, RunningOptions runningOptions, ReprocessingContext reprocessingContext) {
-        return throttle(entriesToIndex, Duration.ofSeconds(1), runningOptions.getMessagesPerSecond())
-            .flatMap(entry -> reIndexMessage(entry.getMailboxSession(), entry.getMailbox(), reprocessingContext, entry.getMessage()), runningOptions.getMessagesPerSecond())
+        return ReactorUtils.Throttler.<ReIndexingEntry, Task.Result>forOperation(entry -> reIndexMessage(entry.getMailboxSession(), entry.getMailbox(), reprocessingContext, entry.getMessage()))
+            .window(runningOptions.getMessagesPerSecond(), Duration.ofSeconds(1))
+            .throttle(entriesToIndex)
             .reduce(Task::combine)
             .switchIfEmpty(Mono.just(Result.COMPLETED));
     }
@@ -221,11 +222,5 @@ public class ReIndexerPerformer {
                 reprocessingContext.recordFailureDetailsForMessage(mailbox.getMailboxId(), message.getUid());
                 return Mono.just(Result.PARTIAL);
             });
-    }
-
-    private <V> Flux<V> throttle(Flux<V> flux, Duration windowDuration, int windowMaxSize) {
-        return flux.windowTimeout(windowMaxSize, windowDuration)
-            .zipWith(Flux.interval(DELAY, windowDuration))
-            .flatMap(Tuple2::getT1);
     }
 }
