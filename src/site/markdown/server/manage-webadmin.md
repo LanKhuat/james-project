@@ -752,9 +752,9 @@ The message is UNSEEN via IMAP
 
 An admin can specify the concurrency that should be used when running the task:
 
- - `messagesPerSecond` rate at which messages should be processed, per second. Defaults to 100.
+ - `messagesPerSecond` rate of messages to be processed per second. Default is 100.
 
-This optional parameter must have a strictly positive integer as a value and be passed as query parameters.
+This optional parameter must have a strictly positive integer as a value and be passed as query parameter.
 
 Example:
 
