@@ -209,5 +209,4 @@ public class HealthCheckRoutes implements PublicRoutes {
             .type(ErrorResponder.ErrorType.NOT_FOUND)
             .haltError();
     }
-        
 }

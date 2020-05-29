@@ -71,7 +71,6 @@ public class PeriodicalHealthChecksTest {
         return loggingEventListAppender;
     }
 
-
     private static final Duration PERIOD = Duration.ofSeconds(10);
     private static final int EXPECTED_INVOKED_TIME = 10;
     private HealthCheck mockHealthCheck1;
@@ -119,7 +118,7 @@ public class PeriodicalHealthChecksTest {
         assertThat(loggingEvents.list).hasSize(1)
             .allSatisfy(loggingEvent -> {
                 assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-                assertThat(loggingEvent.getFormattedMessage()).isEqualTo("UNHEALTHY: testing : Optional[cause]");
+                assertThat(loggingEvent.getFormattedMessage()).contains("UNHEALTHY", "testing", "cause");
             });
     }
 
@@ -127,8 +126,8 @@ public class PeriodicalHealthChecksTest {
     void startShouldLogPeriodicallyWhenDegraded() {
         ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
 
-        TestingHealthCheck unhealthy = () -> Mono.just(Result.degraded(TestingHealthCheck.COMPONENT_NAME, "cause"));
-        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+        TestingHealthCheck degraded = () -> Mono.just(Result.degraded(TestingHealthCheck.COMPONENT_NAME, "cause"));
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(degraded),
             scheduler,
             new PeriodicalHealthChecksConfiguration(PERIOD));
         testee.start();
@@ -137,7 +136,7 @@ public class PeriodicalHealthChecksTest {
         assertThat(loggingEvents.list).hasSize(1)
             .allSatisfy(loggingEvent -> {
                 assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
-                assertThat(loggingEvent.getFormattedMessage()).isEqualTo("DEGRADED: testing : cause");
+                assertThat(loggingEvent.getFormattedMessage()).contains("DEGRADED", "testing", "cause");
             });
     }
 
@@ -145,8 +144,8 @@ public class PeriodicalHealthChecksTest {
     void startShouldNotLogWhenHealthy() {
         ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
 
-        TestingHealthCheck unhealthy = () -> Mono.just(Result.healthy(TestingHealthCheck.COMPONENT_NAME));
-        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy),
+        TestingHealthCheck healthy = () -> Mono.just(Result.healthy(TestingHealthCheck.COMPONENT_NAME));
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(healthy),
             scheduler,
             new PeriodicalHealthChecksConfiguration(PERIOD));
         testee.start();
