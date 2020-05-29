@@ -32,12 +32,15 @@ import org.apache.james.core.healthcheck.ComponentName;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.core.healthcheck.Result;
 import org.apache.james.mailbox.events.EventDeadLettersHealthCheck;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableSet;
 
 import ch.qos.logback.classic.Level;
@@ -152,6 +155,32 @@ public class PeriodicalHealthChecksTest {
 
         scheduler.advanceTimeBy(PERIOD);
         assertThat(loggingEvents.list).hasSize(0);
+    }
+
+    @Test
+    void startShouldLogWhenMultipleHealthChecks() {
+        ListAppender<ILoggingEvent> loggingEvents = getListAppenderForClass(PeriodicalHealthChecks.class);
+
+        TestingHealthCheck unhealthy = () -> Mono.just(Result.unhealthy(TestingHealthCheck.COMPONENT_NAME, "cause"));
+        TestingHealthCheck degraded = () -> Mono.just(Result.degraded(TestingHealthCheck.COMPONENT_NAME, "cause"));
+        TestingHealthCheck healthy = () -> Mono.just(Result.healthy(TestingHealthCheck.COMPONENT_NAME));
+
+        testee = new PeriodicalHealthChecks(ImmutableSet.of(unhealthy, degraded, healthy),
+            scheduler,
+            new PeriodicalHealthChecksConfiguration(PERIOD));
+        testee.start();
+
+        scheduler.advanceTimeBy(PERIOD);
+
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(loggingEvents.list).hasSize(2);
+            softly.assertThat(loggingEvents.list.stream()
+                .map(event -> new Tuple(event.getLevel(), event.getFormattedMessage()))
+                .collect(Guavate.toImmutableList()))
+                .containsExactlyInAnyOrder(
+                    new Tuple(Level.ERROR, "UNHEALTHY: testing : cause"),
+                    new Tuple(Level.WARN, "DEGRADED: testing : cause"));
+        });
     }
 
     @Test
