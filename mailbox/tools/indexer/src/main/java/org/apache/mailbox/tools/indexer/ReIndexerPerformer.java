@@ -83,7 +83,6 @@ public class ReIndexerPerformer {
     private static final int SINGLE_MESSAGE = 1;
     private static final String RE_INDEXING = "re-indexing";
     private static final Username RE_INDEXER_PERFORMER_USER = Username.of(RE_INDEXING);
-    private static final Duration DELAY = Duration.ofSeconds(0);
 
     private final MailboxManager mailboxManager;
     private final ListeningMessageSearchIndex messageSearchIndex;
