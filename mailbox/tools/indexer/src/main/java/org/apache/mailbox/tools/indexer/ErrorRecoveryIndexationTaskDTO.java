@@ -58,7 +58,13 @@ public class ErrorRecoveryIndexationTaskDTO implements TaskDTO {
             .stream()
             .map(ErrorRecoveryIndexationTaskDTO::failuresByMailboxToReindexingFailureDTO)
             .collect(Guavate.toImmutableList());
-        return new ErrorRecoveryIndexationTaskDTO(type, failureDTOs, Optional.of(RunningOptionsDTO.toDTO(task.getRunningOptions())));
+
+        List<String> failureMailboxDTOs = task.getPreviousFailures()
+            .mailboxFailures()
+            .stream()
+            .map(MailboxId::serialize)
+            .collect(Guavate.toImmutableList());
+        return new ErrorRecoveryIndexationTaskDTO(type, failureDTOs, Optional.of(failureMailboxDTOs), Optional.of(RunningOptionsDTO.toDTO(task.getRunningOptions())));
     }
 
     private static ReindexingFailureDTO failuresByMailboxToReindexingFailureDTO(Map.Entry<MailboxId,
@@ -92,14 +98,17 @@ public class ErrorRecoveryIndexationTaskDTO implements TaskDTO {
     }
 
     private final String type;
-    private final List<ReindexingFailureDTO> previousFailures;
+    private final List<ReindexingFailureDTO> messageFailures;
+    private final  Optional<List<String>> mailboxFailures;
     private final Optional<RunningOptionsDTO> runningOptions;
 
     private ErrorRecoveryIndexationTaskDTO(@JsonProperty("type") String type,
-                                           @JsonProperty("previousFailures") List<ReindexingFailureDTO> previousFailures,
+                                           @JsonProperty("previousFailures") List<ReindexingFailureDTO> messageFailures,
+                                           @JsonProperty("mailboxFailures") Optional<List<String>> mailboxFailures,
                                            @JsonProperty("runningOptions") Optional<RunningOptionsDTO> runningOptions) {
         this.type = type;
-        this.previousFailures = previousFailures;
+        this.messageFailures = messageFailures;
+        this.mailboxFailures = mailboxFailures;
         this.runningOptions = runningOptions;
     }
 
@@ -108,8 +117,12 @@ public class ErrorRecoveryIndexationTaskDTO implements TaskDTO {
         return type;
     }
 
-    public List<ReindexingFailureDTO> getPreviousFailures() {
-        return previousFailures;
+    public List<ReindexingFailureDTO> getMessageFailures() {
+        return messageFailures;
+    }
+
+    public  Optional<List<String>> getMailboxFailures() {
+        return mailboxFailures;
     }
 
     public Optional<RunningOptionsDTO> getRunningOptions() {
