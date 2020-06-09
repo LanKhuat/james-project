@@ -188,7 +188,8 @@ public class ReIndexerPerformer {
         return mailboxSessionMapperFactory.getMailboxMapper(mailboxSession)
             .findMailboxByIdReactive(mailboxId)
             .flatMap(mailbox -> fullyReadMessage(mailboxSession, mailbox, uid)
-                .flatMap(message -> reIndexMessage(Either.right(new ReIndexingEntry(mailbox, mailboxSession, message)), reprocessingContext)))
+                .map(message -> Either.<Failure, ReIndexingEntry>right(new ReIndexingEntry(mailbox, mailboxSession, message)))
+                .flatMap(entryOrFailure -> reIndexMessage(entryOrFailure, reprocessingContext)))
             .switchIfEmpty(Mono.just(Result.COMPLETED));
     }
 
@@ -217,9 +218,9 @@ public class ReIndexerPerformer {
                 .flatMap(mailboxId -> mapper.findMailboxByIdReactive(mailboxId)
                     .flatMapMany(mailbox -> reIndexingEntriesForMailbox(mailbox, mailboxSession))
                     .onErrorResume(e -> {
-                    LOGGER.warn("Failed to re-index {}", mailboxId, e);
-                    return Mono.just(Either.left(new MailboxFailure(mailboxId)));
-            })));
+                        LOGGER.warn("Failed to re-index {}", mailboxId, e);
+                        return Mono.just(Either.left(new MailboxFailure(mailboxId)));
+                    })));
 
         return reIndexMessages(entriesToIndex, runningOptions, reprocessingContext);
     }
