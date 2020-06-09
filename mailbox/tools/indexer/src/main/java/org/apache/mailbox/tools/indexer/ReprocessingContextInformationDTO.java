@@ -38,7 +38,6 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.primitives.Booleans;
 
 public class ReprocessingContextInformationDTO implements AdditionalInformationDTO {
 
@@ -161,7 +160,8 @@ public class ReprocessingContextInformationDTO implements AdditionalInformationD
     }
 
     static ReIndexingExecutionFailures deserializeFailures(MailboxId.Factory mailboxIdFactory,
-                                                           List<ReindexingFailureDTO> failures, List<String> mailboxFailures) {
+                                                           List<ReindexingFailureDTO> failures,
+                                                           List<String> mailboxFailures) {
         List<ReIndexingExecutionFailures.ReIndexingFailure> reIndexingFailures = failures
             .stream()
             .flatMap(failuresForMailbox ->
@@ -206,7 +206,7 @@ public class ReprocessingContextInformationDTO implements AdditionalInformationD
     }
 
     static List<ReindexingFailureDTO> resolveFailure(Optional<List<ReindexingFailureDTO>> failures, Optional<List<ReindexingFailureDTO>> messageFailures) {
-        Preconditions.checkState(Booleans.countTrue(failures.isPresent(), messageFailures.isPresent()) == 1,
+        Preconditions.checkState(failures.isPresent() ^ messageFailures.isPresent(),
             "Exactly one field 'failures' or 'messageFailures' need to be specified");
 
         return failures.orElseGet(messageFailures::get);

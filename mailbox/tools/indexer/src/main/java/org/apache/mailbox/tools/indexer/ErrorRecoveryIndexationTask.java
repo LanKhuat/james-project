@@ -69,8 +69,8 @@ public class ErrorRecoveryIndexationTask implements Task {
 
         public ErrorRecoveryIndexationTask create(ErrorRecoveryIndexationTaskDTO dto) {
             return new ErrorRecoveryIndexationTask(reIndexerPerformer,
-                new ReIndexingExecutionFailures(messageFailuresFromDTO(dto.getMessageFailures()),
-                    mailboxFailuresFromDTO(dto.getMailboxFailures())),
+                new ReIndexingExecutionFailures(messageFailuresFromDTO(dto.getPreviousMessageFailures()),
+                    mailboxFailuresFromDTO(dto.getPreviousMailboxFailures())),
                 dto.getRunningOptions()
                     .map(RunningOptionsDTO::toDomainObject)
                     .orElse(RunningOptions.DEFAULT));

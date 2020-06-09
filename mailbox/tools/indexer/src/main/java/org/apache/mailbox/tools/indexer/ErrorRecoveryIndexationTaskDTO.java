@@ -98,17 +98,17 @@ public class ErrorRecoveryIndexationTaskDTO implements TaskDTO {
     }
 
     private final String type;
-    private final List<ReindexingFailureDTO> messageFailures;
-    private final  Optional<List<String>> mailboxFailures;
+    private final List<ReindexingFailureDTO> previousMessageFailures;
+    private final  Optional<List<String>> previousMailboxFailures;
     private final Optional<RunningOptionsDTO> runningOptions;
 
     private ErrorRecoveryIndexationTaskDTO(@JsonProperty("type") String type,
-                                           @JsonProperty("previousFailures") List<ReindexingFailureDTO> messageFailures,
-                                           @JsonProperty("mailboxFailures") Optional<List<String>> mailboxFailures,
+                                           @JsonProperty("previousFailures") List<ReindexingFailureDTO> previousMessageFailures,
+                                           @JsonProperty("previousMailboxFailures") Optional<List<String>> previousMailboxFailures,
                                            @JsonProperty("runningOptions") Optional<RunningOptionsDTO> runningOptions) {
         this.type = type;
-        this.messageFailures = messageFailures;
-        this.mailboxFailures = mailboxFailures;
+        this.previousMessageFailures = previousMessageFailures;
+        this.previousMailboxFailures = previousMailboxFailures;
         this.runningOptions = runningOptions;
     }
 
@@ -117,12 +117,12 @@ public class ErrorRecoveryIndexationTaskDTO implements TaskDTO {
         return type;
     }
 
-    public List<ReindexingFailureDTO> getMessageFailures() {
-        return messageFailures;
+    public List<ReindexingFailureDTO> getPreviousMessageFailures() {
+        return previousMessageFailures;
     }
 
-    public  Optional<List<String>> getMailboxFailures() {
-        return mailboxFailures;
+    public  Optional<List<String>> getPreviousMailboxFailures() {
+        return previousMailboxFailures;
     }
 
     public Optional<RunningOptionsDTO> getRunningOptions() {

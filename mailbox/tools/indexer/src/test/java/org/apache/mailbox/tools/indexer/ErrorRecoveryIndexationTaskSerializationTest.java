@@ -43,7 +43,7 @@ class ErrorRecoveryIndexationTaskSerializationTest {
     private final int successfullyReprocessedMailCount = 42;
     private final int failedReprocessedMailCount = 2;
     private final String serializedErrorRecoveryReindexingTask = "{\"type\": \"error-recovery-indexation\"," +
-        " \"messageFailures\" : [{\"mailboxId\":\"1\",\"uids\":[10]},{\"mailboxId\":\"2\",\"uids\":[20]}], \"mailboxFailures\": [\"3\"], \"runningOptions\":{\"messagesPerSecond\":50}}";
+        " \"previousMessageFailures\" : [{\"mailboxId\":\"1\",\"uids\":[10]},{\"mailboxId\":\"2\",\"uids\":[20]}], \"previousMailboxFailures\": [\"3\"], \"runningOptions\":{\"messagesPerSecond\":50}}";
     private final String legacySerializedErrorRecoveryReindexingTask = "{\"type\": \"error-recovery-indexation\"," +
         " \"previousFailures\" : [{\"mailboxId\":\"1\",\"uids\":[10]},{\"mailboxId\":\"2\",\"uids\":[20]}]}";
     private final String serializedAdditionalInformation = "{\"type\": \"error-recovery-indexation\", \"successfullyReprocessedMailCount\":42,\"failedReprocessedMailCount\":2,\"messageFailures\":[{\"mailboxId\":\"1\",\"uids\":[10]},{\"mailboxId\":\"2\",\"uids\":[20]}], \"mailboxFailures\":[\"3\"], \"timestamp\":\"2018-11-13T12:00:55Z\", \"runningOptions\":{\"messagesPerSecond\":50}}";
