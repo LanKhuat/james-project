@@ -22,8 +22,6 @@ package org.apache.james.jmap.api.projections;
 import static org.apache.james.jmap.api.projections.MessageFastViewProjection.METRIC_RETRIEVE_HIT_COUNT;
 import static org.apache.james.jmap.api.projections.MessageFastViewProjection.METRIC_RETRIEVE_MISS_COUNT;
 
-import java.util.Locale;
-
 import javax.inject.Inject;
 
 import org.apache.james.core.healthcheck.ComponentName;
