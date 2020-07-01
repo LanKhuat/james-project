@@ -111,8 +111,6 @@ class WebAdminReprocessingContextInformationDTOTest {
                 .withoutNestedType()
                 .serialize(domainObject);
 
-        System.out.println(json);
-
         assertThatJson(json)
             .isEqualTo(serializedFullAdditionalInformation);
     }
