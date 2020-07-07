@@ -452,4 +452,82 @@ public class BouncerTest {
         assertThat(mailetContext.getSentMails()).containsOnly(expected);
         assertThat(mailetContext.getBouncedMails()).isEmpty();
     }
+
+    @Test
+    public void bounceShouldNotAttachErrorCodeWhenNotMessagingException() throws Exception {
+        RemoteDeliveryConfiguration configuration = new RemoteDeliveryConfiguration(
+            FakeMailetConfig.builder()
+                .setProperty(RemoteDeliveryConfiguration.HELO_NAME, HELLO_NAME)
+                .setProperty(RemoteDeliveryConfiguration.BOUNCE_PROCESSOR, BOUNCE_PROCESSOR)
+                .build(),
+            mock(DomainList.class));
+        Bouncer testee = new Bouncer(configuration, mailetContext);
+
+        Mail mail = FakeMail.builder().name("name").state(Mail.DEFAULT)
+            .sender(MailAddressFixture.ANY_AT_JAMES)
+            .build();
+
+        testee.bounce(mail, new Exception());
+
+        FakeMailContext.SentMail expected = FakeMailContext.sentMailBuilder()
+            .sender(MailAddressFixture.ANY_AT_JAMES)
+            .attribute(new Attribute(DELIVERY_ERROR, AttributeValue.of("null")))
+            .state(BOUNCE_PROCESSOR)
+            .fromMailet()
+            .build();
+        assertThat(mailetContext.getSentMails()).containsOnly(expected);
+        assertThat(mailetContext.getBouncedMails()).isEmpty();
+    }
+
+    @Test
+    public void bounceShouldNotAttachErrorCodeWhenNotSmtpError() throws Exception {
+        RemoteDeliveryConfiguration configuration = new RemoteDeliveryConfiguration(
+            FakeMailetConfig.builder()
+                .setProperty(RemoteDeliveryConfiguration.HELO_NAME, HELLO_NAME)
+                .setProperty(RemoteDeliveryConfiguration.BOUNCE_PROCESSOR, BOUNCE_PROCESSOR)
+                .build(),
+            mock(DomainList.class));
+        Bouncer testee = new Bouncer(configuration, mailetContext);
+
+        Mail mail = FakeMail.builder().name("name").state(Mail.DEFAULT)
+            .sender(MailAddressFixture.ANY_AT_JAMES)
+            .build();
+
+        testee.bounce(mail, new MessagingException("not smtp related"));
+
+        FakeMailContext.SentMail expected = FakeMailContext.sentMailBuilder()
+            .sender(MailAddressFixture.ANY_AT_JAMES)
+            .attribute(new Attribute(DELIVERY_ERROR, AttributeValue.of("not smtp related")))
+            .state(BOUNCE_PROCESSOR)
+            .fromMailet()
+            .build();
+        assertThat(mailetContext.getSentMails()).containsOnly(expected);
+        assertThat(mailetContext.getBouncedMails()).isEmpty();
+    }
+
+    @Test
+    public void bounceShouldAttachNullErrorMessageWhenNoException() throws Exception {
+        RemoteDeliveryConfiguration configuration = new RemoteDeliveryConfiguration(
+            FakeMailetConfig.builder()
+                .setProperty(RemoteDeliveryConfiguration.HELO_NAME, HELLO_NAME)
+                .setProperty(RemoteDeliveryConfiguration.BOUNCE_PROCESSOR, BOUNCE_PROCESSOR)
+                .build(),
+            mock(DomainList.class));
+        Bouncer testee = new Bouncer(configuration, mailetContext);
+
+        Mail mail = FakeMail.builder().name("name").state(Mail.DEFAULT)
+            .sender(MailAddressFixture.ANY_AT_JAMES)
+            .build();
+
+        testee.bounce(mail, null);
+
+        FakeMailContext.SentMail expected = FakeMailContext.sentMailBuilder()
+            .sender(MailAddressFixture.ANY_AT_JAMES)
+            .attribute(new Attribute(DELIVERY_ERROR, AttributeValue.of("null")))
+            .state(BOUNCE_PROCESSOR)
+            .fromMailet()
+            .build();
+        assertThat(mailetContext.getSentMails()).containsOnly(expected);
+        assertThat(mailetContext.getBouncedMails()).isEmpty();
+    }
 }

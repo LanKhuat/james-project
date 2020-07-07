@@ -126,7 +126,7 @@ public class Bouncer {
     }
 
     private String sanitizeExceptionMessage(Exception e) {
-        if (e.getMessage() == null) {
+        if (e == null || e.getMessage() == null) {
             return "null";
         } else {
             return e.getMessage().trim();
