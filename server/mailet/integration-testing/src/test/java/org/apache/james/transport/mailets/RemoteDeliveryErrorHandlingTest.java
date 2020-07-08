@@ -46,6 +46,7 @@ import org.apache.james.mock.smtp.server.testing.MockSmtpServerExtension.DockerM
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.transport.matchers.All;
+import org.apache.james.transport.matchers.IsRemoteDeliveryPermanentError;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.MailRepositoryProbeImpl;
 import org.apache.james.utils.SMTPMessageSender;
@@ -102,6 +103,10 @@ public class RemoteDeliveryErrorHandlingTest {
                         .matcher(All.class)))
                 .putProcessor(ProcessorConfiguration.builder()
                     .state("remote-delivery-error")
+                    .addMailet(MailetConfiguration.builder()
+                        .mailet(ToRepository.class)
+                        .matcher(IsRemoteDeliveryPermanentError.class)
+                        .addProperty("repositoryPath", REMOTE_DELIVERY_PERMANENT_ERROR_REPOSITORY.asString()))
                     .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(ToRepository.class)
@@ -181,7 +186,6 @@ public class RemoteDeliveryErrorHandlingTest {
     }
 
     @Test
-    @Disabled("Remote delivery should attach failures information to the mail, and we should provide a Matcher for it")
     void remoteDeliveryShouldStorePermanentFailuresSeparately(SMTPMessageSender smtpMessageSender, DockerMockSmtp dockerMockSmtp) throws Exception {
         // Given a permanent failing remote server
         dockerMockSmtp.getConfigurationClient()
