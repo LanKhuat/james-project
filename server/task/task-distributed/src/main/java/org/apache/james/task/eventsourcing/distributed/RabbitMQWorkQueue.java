@@ -135,8 +135,7 @@ public class RabbitMQWorkQueue implements WorkQueue {
                 .doOnNext(task -> delivery.ack())
                 .flatMap(task -> executeOnWorker(taskId, task)))
             .onErrorResume(error -> {
-                String errorMessage = String.format("Unable to process %s %s", TASK_ID, delivery.getProperties().getHeaders().get(TASK_ID));
-                LOGGER.error(errorMessage, error);
+                LOGGER.error("Unable to process {} {}", TASK_ID, delivery.getProperties().getHeaders().get(TASK_ID), error);
                 delivery.nack(!REQUEUE);
                 return Mono.empty();
             });
