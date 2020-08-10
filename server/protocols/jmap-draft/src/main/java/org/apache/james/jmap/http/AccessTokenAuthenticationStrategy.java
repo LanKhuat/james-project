@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
+import org.apache.james.jmap.api.access.exceptions.NotAnAccessTokenException;
 import org.apache.james.jmap.draft.api.AccessTokenManager;
 import org.apache.james.jmap.exceptions.UnauthorizedException;
 import org.apache.james.mailbox.MailboxManager;
@@ -51,6 +52,7 @@ public class AccessTokenAuthenticationStrategy implements AuthenticationStrategy
             .filterWhen(accessTokenManager::isValid)
             .flatMap(item -> Mono.from(accessTokenManager.getUsernameFromToken(item)))
             .map(mailboxManager::createSystemSession)
-          .onErrorResume(InvalidAccessToken.class, error -> Mono.error(new UnauthorizedException("Invalid access token", error)));
+            .onErrorResume(InvalidAccessToken.class, error -> Mono.error(new UnauthorizedException("Invalid access token", error)))
+            .onErrorResume(NotAnAccessTokenException.class, error -> Mono.error(new UnauthorizedException("Not an access token", error)));
     }
 }
