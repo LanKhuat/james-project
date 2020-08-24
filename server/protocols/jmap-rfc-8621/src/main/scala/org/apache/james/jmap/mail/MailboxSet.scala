@@ -252,6 +252,7 @@ object SharedWithPartialUpdate {
   } catch {
     case e: Exception => Left(InvalidPropertyException(property, e.getMessage))
   }
+
   def parseRights(newValue: JsValue, property: String, serializer: Serializer): Either[PatchUpdateValidationException, Rfc4314Rights] = serializer.deserializeRfc4314Rights(newValue) match {
     case JsSuccess(rights, _) => scala.Right(rights)
     case JsError(errors) =>
