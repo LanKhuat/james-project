@@ -407,7 +407,7 @@ trait VacationResponseGetMethodContract {
          |  "methodResponses": [[
          |    "error",
          |      {
-         |        "type": "error",
+         |        "type": "invalidArguments",
          |        "description": "{\"errors\":[{\"path\":\"obj.ids[0]\",\"messages\":[\"Predicate isEmpty() did not fail.\"]}]}"
          |      },
          |    "c1"]]
