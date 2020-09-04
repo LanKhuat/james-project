@@ -48,28 +48,28 @@ trait VacationResponseSetMethodContract {
     val request =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "isEnabled": true,
-         |           "fromDate": "2014-10-30T14:12:00Z",
-         |           "toDate": "2014-11-30T14:12:00Z",
-         |           "subject": "I am in vacation",
-         |           "textBody": "I'm currently enjoying life. Please disturb me later",
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"],
-         |     ["VacationResponse/get", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "ids": ["singleton"]
-         |     }, "c2"]
-         |   ]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "isEnabled": true,
+         |          "fromDate": "2014-10-30T14:12:00Z",
+         |          "toDate": "2014-11-30T14:12:00Z",
+         |          "subject": "I am in vacation",
+         |          "textBody": "I'm currently enjoying life. Please disturb me later",
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"],
+         |    ["VacationResponse/get", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "ids": ["singleton"]
+         |    }, "c2"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -122,23 +122,24 @@ trait VacationResponseSetMethodContract {
     val request1 =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "isEnabled": true,
-         |           "fromDate": "2014-10-30T14:12:00Z",
-         |           "toDate": "2014-11-30T14:12:00Z",
-         |           "subject": "I am in vacation",
-         |           "textBody": "I'm currently enjoying life. Please disturb me later",
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"]]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "isEnabled": true,
+         |          "fromDate": "2014-10-30T14:12:00Z",
+         |          "toDate": "2014-11-30T14:12:00Z",
+         |          "subject": "I am in vacation",
+         |          "textBody": "I'm currently enjoying life. Please disturb me later",
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -154,21 +155,21 @@ trait VacationResponseSetMethodContract {
     val request2 =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {}
-         |       }
-         |     }, "c1"],
-         |     ["VacationResponse/get", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "ids": ["singleton"]
-         |     }, "c2"]
-         |   ]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {}
+         |      }
+         |    }, "c1"],
+         |    ["VacationResponse/get", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "ids": ["singleton"]
+         |    }, "c2"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -221,19 +222,19 @@ trait VacationResponseSetMethodContract {
     val request =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -270,24 +271,24 @@ trait VacationResponseSetMethodContract {
     val request1 =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "isEnabled": true,
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "isEnabled": true,
          |           "fromDate": "2014-10-30T14:12:00Z",
          |           "toDate": "2014-11-30T14:12:00Z",
          |           "subject": "I am in vacation",
          |           "textBody": "I'm currently enjoying life. Please disturb me later",
          |           "htmlBody": ""
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -304,23 +305,23 @@ trait VacationResponseSetMethodContract {
     val request2 =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"],
-         |     ["VacationResponse/get", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "ids": ["singleton"]
-         |     }, "c2"]
-         |   ]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"],
+         |    ["VacationResponse/get", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "ids": ["singleton"]
+         |    }, "c2"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -360,10 +361,10 @@ trait VacationResponseSetMethodContract {
          |          "subject": "I am in vacation",
          |          "textBody": "I'm currently enjoying life. Please disturb me later",
          |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       ],
-         |       "notFound": []
-         |      }, "c2"]
+         |        }
+         |      ],
+         |      "notFound": []
+         |    }, "c2"]
          |  ]
          |}""".stripMargin)
   }
@@ -373,275 +374,19 @@ trait VacationResponseSetMethodContract {
     val request =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "invalid": {
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
-         |}
-         |""".stripMargin
-
-    val response = `given`
-      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-      .body(request)
-    .when
-      .post
-    .`then`
-      .log().ifValidationFails()
-      .statusCode(SC_OK)
-      .contentType(JSON)
-      .extract
-      .body
-      .asString
-
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |	"sessionState": "75128aab4b1b",
-         |	"methodResponses": [
-         |	  ["VacationResponse/set", {
-         |	    "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |		  "newState": "000001",
-         |		  "notUpdated": {
-         |		    "invalid": {
-         |				  "type": "invalidArguments",
-         |				  "description": "id invalid must be singleton"
-         |				}
-         |			}
-         |		}, "c1"]
-         |	]
-         |}""".stripMargin)
-  }
-
-  @Test
-  def updateShouldFailWhenIdIsPresent(server: GuiceJamesServer): Unit = {
-    val request =
-      s"""
-         |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "id": "singleton",
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
-         |}
-         |""".stripMargin
-
-    val response = `given`
-      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-      .body(request)
-    .when
-      .post
-    .`then`
-      .log().ifValidationFails()
-      .statusCode(SC_OK)
-      .contentType(JSON)
-      .extract
-      .body
-      .asString
-
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |	"sessionState": "75128aab4b1b",
-         |	"methodResponses": [
-         |	  ["VacationResponse/set", {
-         |		  "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |		  "newState": "000001",
-         |			"notUpdated": {
-         |		    "singleton": {
-         |			    "type": "invalidArguments",
-         |					"description": "id is server-set thus cannot be changed"
-         |				}
-         |			}
-         |		}, "c1"]
-         |	]
-         |}""".stripMargin)
-  }
-
-  @Test
-  def updateShouldFailWhenInvalidDate(server: GuiceJamesServer): Unit = {
-    val request =
-      s"""
-         |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "fromDate": "2014/12/30"
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
-         |}
-         |""".stripMargin
-
-    val response = `given`
-      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-      .body(request)
-    .when
-      .post
-    .`then`
-      .log().ifValidationFails()
-      .statusCode(SC_OK)
-      .contentType(JSON)
-      .extract
-      .body
-      .asString
-
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |	"sessionState": "75128aab4b1b",
-         |	"methodResponses": [
-         |		["VacationResponse/set", {
-         |	    "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |		  "newState": "000001",
-         |			"notUpdated": {
-         |			  "singleton": {
-         |				  "type": "invalidArguments",
-         |					"description": "java.time.format.DateTimeParseException: Text '2014/12/30' could not be parsed at index 4"
-         |				}
-         |			}
-         |		}, "c1"]
-         |	]
-         |}""".stripMargin)
-  }
-
-  @Test
-  def updateShouldFailWhenFromDateIsMoreRecentThanToDate(server: GuiceJamesServer): Unit = {
-    val request =
-      s"""
-         |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "fromDate": "2014-11-30T14:12:00Z",
-         |           "toDate": "2014-10-30T14:12:00Z"
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
-         |}
-         |""".stripMargin
-
-    val response = `given`
-      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-      .body(request)
-    .when
-      .post
-    .`then`
-      .log().ifValidationFails()
-      .statusCode(SC_OK)
-      .contentType(JSON)
-      .extract
-      .body
-      .asString
-
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |  "sessionState": "75128aab4b1b",
-         |	"methodResponses": [
-         |		["VacationResponse/set", {
-         |	    "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |		  "newState": "000001",
-         |			"notUpdated": {
-         |				"singleton": {
-         |					"type": "invalidArguments",
-         |					"description": "fromDate must be older than toDate"
-         |				}
-         |			}
-         |		}, "c1"]
-         |	]
-         |}""".stripMargin)
-  }
-
-  @Test
-  def updateShouldNoopWhenEmptyMap(server: GuiceJamesServer): Unit = {
-    val request =
-      s"""
-         |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |       ["VacationResponse/set", {
-         |         "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |         "update": {}
-         |       },
-         |    "c1"]
-         |   ]
-         |}
-         |""".stripMargin
-
-    val response = `given`
-      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-      .body(request)
-    .when
-      .post
-    .`then`
-      .log().ifValidationFails()
-      .statusCode(SC_OK)
-      .contentType(JSON)
-      .extract
-      .body
-      .asString
-
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |  "sessionState": "75128aab4b1b",
-         |  "methodResponses": [
-         |		["VacationResponse/set", {
-         |	    "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |			"newState": "000001"
-         |		}, "c1"]
-         |	]
-         |}""".stripMargin)
-  }
-
-  @Test
-  def updateShouldFailWhenMultiplePatchObjects(server: GuiceJamesServer): Unit = {
-    val request =
-      s"""
-         |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "update": {
-         |         "singleton": {
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         },
-         |         "singleton2": {
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "invalid": {
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -663,18 +408,274 @@ trait VacationResponseSetMethodContract {
          |  "sessionState": "75128aab4b1b",
          |  "methodResponses": [
          |    ["VacationResponse/set", {
-         |	    "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |		  "newState": "000001",
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001",
+         |      "notUpdated": {
+         |        "invalid": {
+         |          "type": "invalidArguments",
+         |          "description": "id invalid must be singleton"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}""".stripMargin)
+  }
+
+  @Test
+  def updateShouldFailWhenIdIsPresent(server: GuiceJamesServer): Unit = {
+    val request =
+      s"""
+         |{
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "id": "singleton",
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}
+         |""".stripMargin
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .log().ifValidationFails()
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response).isEqualTo(
+      s"""{
+         |  "sessionState": "75128aab4b1b",
+         |  "methodResponses": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001",
+         |      "notUpdated": {
+         |        "singleton": {
+         |          "type": "invalidArguments",
+         |          "description": "id is server-set thus cannot be changed"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}""".stripMargin)
+  }
+
+  @Test
+  def updateShouldFailWhenInvalidDate(server: GuiceJamesServer): Unit = {
+    val request =
+      s"""
+         |{
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "fromDate": "2014/12/30"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}
+         |""".stripMargin
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .log().ifValidationFails()
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response).isEqualTo(
+      s"""{
+         |  "sessionState": "75128aab4b1b",
+         |  "methodResponses": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001",
+         |      "notUpdated": {
+         |        "singleton": {
+         |          "type": "invalidArguments",
+         |          "description": "java.time.format.DateTimeParseException: Text '2014/12/30' could not be parsed at index 4"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}""".stripMargin)
+  }
+
+  @Test
+  def updateShouldFailWhenFromDateIsMoreRecentThanToDate(server: GuiceJamesServer): Unit = {
+    val request =
+      s"""
+         |{
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "fromDate": "2014-11-30T14:12:00Z",
+         |          "toDate": "2014-10-30T14:12:00Z"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}
+         |""".stripMargin
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .log().ifValidationFails()
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response).isEqualTo(
+      s"""{
+         |  "sessionState": "75128aab4b1b",
+         |  "methodResponses": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001",
+         |      "notUpdated": {
+         |        "singleton": {
+         |          "type": "invalidArguments",
+         |          "description": "fromDate must be older than toDate"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}""".stripMargin)
+  }
+
+  @Test
+  def updateShouldNoopWhenEmptyMap(server: GuiceJamesServer): Unit = {
+    val request =
+      s"""
+         |{
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {}
+         |    },
+         |    "c1"]
+         |  ]
+         |}
+         |""".stripMargin
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .log().ifValidationFails()
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response).isEqualTo(
+      s"""{
+         |  "sessionState": "75128aab4b1b",
+         |  "methodResponses": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001"
+         |    }, "c1"]
+         |  ]
+         |}""".stripMargin)
+  }
+
+  @Test
+  def updateShouldFailWhenMultiplePatchObjects(server: GuiceJamesServer): Unit = {
+    val request =
+      s"""
+         |{
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "update": {
+         |        "singleton": {
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        },
+         |        "singleton2": {
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
+         |}
+         |""".stripMargin
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .log().ifValidationFails()
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response).isEqualTo(
+      s"""{
+         |  "sessionState": "75128aab4b1b",
+         |  "methodResponses": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001",
          |      "updated": {
          |        "singleton": {}
          |      },
-         |		  "notUpdated": {
-         |		    "singleton2": {
-         |			    "type": "invalidArguments",
-         |				  "description": "id singleton2 must be singleton"
-         |			  }
-         |		  }
-         |	  }, "c1"]
+         |      "notUpdated": {
+         |        "singleton2": {
+         |          "type": "invalidArguments",
+         |         "description": "id singleton2 must be singleton"
+         |        }
+         |      }
+         |    }, "c1"]
          |  ]
          |}""".stripMargin)
   }
@@ -684,19 +685,19 @@ trait VacationResponseSetMethodContract {
     val request =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "create": {
-         |         "singleton": {
-         |           "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
-         |         }
-         |       }
-         |     }, "c1"]
-         |   ]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "create": {
+         |        "singleton": {
+         |          "htmlBody": "I'm currently enjoying <b>life</b>. <br/>Please disturb me later"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -715,22 +716,19 @@ trait VacationResponseSetMethodContract {
 
     assertThatJson(response).isEqualTo(
       s"""{
-         |	"sessionState": "75128aab4b1b",
-         |	"methodResponses": [
-         |		[
-         |			"VacationResponse/set", {
-         |				"accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |				"newState": "000001",
-         |				"notCreated": {
-         |					"singleton": {
-         |						"type": "invalidArguments",
-         |						"description": "'create' is not supported on singleton objects"
-         |					}
-         |				}
-         |			},
-         |			"c1"
-         |		]
-         |	]
+         |  "sessionState": "75128aab4b1b",
+         |  "methodResponses": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001",
+         |      "notCreated": {
+         |        "singleton": {
+         |          "type": "invalidArguments",
+         |          "description": "'create' is not supported on singleton objects"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
          |}""".stripMargin)
   }
 
@@ -739,15 +737,15 @@ trait VacationResponseSetMethodContract {
     val request =
       s"""
          |{
-         |   "using": [ "urn:ietf:params:jmap:core",
-         |     "urn:ietf:params:jmap:mail",
-         |     "urn:ietf:params:jmap:vacationresponse" ],
-         |   "methodCalls": [
-         |     ["VacationResponse/set", {
-         |       "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |       "destroy": ["singleton"]
-         |     }, "c1"]
-         |   ]
+         |  "using": [ "urn:ietf:params:jmap:core",
+         |    "urn:ietf:params:jmap:mail",
+         |    "urn:ietf:params:jmap:vacationresponse" ],
+         |  "methodCalls": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "destroy": ["singleton"]
+         |    }, "c1"]
+         |  ]
          |}
          |""".stripMargin
 
@@ -766,20 +764,19 @@ trait VacationResponseSetMethodContract {
 
     assertThatJson(response).isEqualTo(
       s"""{
-         |	"sessionState": "75128aab4b1b",
-         |	"methodResponses": [
-         |		[
-         |			"VacationResponse/set", {
-         |		    "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |				"newState": "000001",
-         |				"notDestroyed": {
-         |					"singleton": {
-         |						"type": "invalidArguments",
-         |						"description": "'destroy' is not supported on singleton objects"
-         |					}
-         |				}
-         |			}, "c1"]
-         |	]
+         |  "sessionState": "75128aab4b1b",
+         |  "methodResponses": [
+         |    ["VacationResponse/set", {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "newState": "000001",
+         |      "notDestroyed": {
+         |        "singleton": {
+         |          "type": "invalidArguments",
+         |          "description": "'destroy' is not supported on singleton objects"
+         |        }
+         |      }
+         |    }, "c1"]
+         |  ]
          |}""".stripMargin)
   }
 }
