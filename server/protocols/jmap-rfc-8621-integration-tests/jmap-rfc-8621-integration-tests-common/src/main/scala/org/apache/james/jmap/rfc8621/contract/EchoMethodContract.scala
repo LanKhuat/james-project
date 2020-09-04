@@ -130,7 +130,7 @@ trait EchoMethodContract {
   }
 
   @Test
-  def echoMethodShouldReturnInvalidArgumentsWhenMissingCoreCapability(): Unit = {
+  def echoMethodShouldReturnUnknownMethodWhenMissingCoreCapability(): Unit = {
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
       .body(ECHO_REQUEST_OBJECT_WITHOUT_CORE_CAPABILITY)

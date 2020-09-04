@@ -6882,7 +6882,7 @@ trait MailboxSetMethodContract {
   }
 
   @Test
-  def mailboxSetShouldReturnInvalidArgumentsWhenMissingOneCapability(): Unit = {
+  def mailboxSetShouldReturnUnknownMethodWhenMissingOneCapability(): Unit = {
     val mailboxId = randomMailboxId
 
     val response = `given`
@@ -6922,7 +6922,7 @@ trait MailboxSetMethodContract {
   }
 
   @Test
-  def mailboxSetShouldReturnInvalidArgumentsWhenMissingAllCapabilities(): Unit = {
+  def mailboxSetShouldReturnUnknownMethodWhenMissingAllCapabilities(): Unit = {
     val mailboxId = randomMailboxId
 
     val response = `given`

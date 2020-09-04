@@ -164,7 +164,7 @@ trait VacationResponseGetMethodContract {
   }
 
   @Test
-  def vacationResponseShouldReturnMethodNotFoundWhenOmittingOneCapability(): Unit = {
+  def vacationResponseShouldReturnUnknownMethodWhenOmittingOneCapability(): Unit = {
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
       .body(s"""{
@@ -202,7 +202,7 @@ trait VacationResponseGetMethodContract {
   }
 
   @Test
-  def vacationResponseShouldReturnMethodNotFoundWhenMissingAllCapability(): Unit = {
+  def vacationResponseShouldReturnUnknownMethodWhenMissingAllCapability(): Unit = {
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
       .body(s"""{
