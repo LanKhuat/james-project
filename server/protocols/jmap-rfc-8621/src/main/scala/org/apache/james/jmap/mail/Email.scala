@@ -29,10 +29,12 @@ import org.apache.james.jmap.mail.Email.Size
 import org.apache.james.jmap.model.Properties
 import org.apache.james.mailbox.model.{MessageId, MessageResult}
 import org.apache.james.mime4j.codec.DecodeMonitor
+import org.apache.james.mime4j.dom.Header
 import org.apache.james.mime4j.message.DefaultMessageBuilder
 import org.apache.james.mime4j.stream.MimeConfig
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 object Email {
@@ -42,14 +44,14 @@ object Email {
   type UnparsedEmailId = String Refined UnparsedEmailIdConstraint
 
   val defaultProperties: Properties = Properties("id", "size")
-  val allowedProperties: Properties = Properties("id", "size", "bodyStructure", "textBody", "htmlBody", "attachments")
+  val allowedProperties: Properties = Properties("id", "size", "bodyStructure", "textBody", "htmlBody", "attachments", "headers")
   val idProperty: Properties = Properties("id")
 
   def asUnparsed(messageId: MessageId): Try[UnparsedEmailId] =
     refined.refineV[UnparsedEmailIdConstraint](messageId.serialize()) match {
-    case Left(e) => Failure(new IllegalArgumentException(e))
-    case scala.Right(value) => Success(value)
-  }
+      case Left(e) => Failure(new IllegalArgumentException(e))
+      case scala.Right(value) => Success(value)
+    }
 
   type Size = Long Refined NonNegative
   val Zero: Size = 0L
@@ -57,9 +59,9 @@ object Email {
   def sanitizeSize(value: Long): Size = {
     val size: Either[String, Size] = refineV[NonNegative](value)
     size.fold(e => {
-        logger.error(s"Encountered an invalid Email size: $e")
-        Zero
-      },
+      logger.error(s"Encountered an invalid Email size: $e")
+      Zero
+    },
       refinedValue => refinedValue)
   }
 
@@ -84,8 +86,20 @@ object Email {
         bodyStructure = bodyStructure,
         textBody = bodyStructure.textBody,
         htmlBody = bodyStructure.htmlBody,
-        attachments = bodyStructure.attachments)
+        attachments = bodyStructure.attachments,
+        asEmailHeaders(mime4JMessage.getHeader)
+      )
     }
+  }
+
+  private def asEmailHeaders(header: Header): List[EmailHeader] = {
+    header.iterator()
+      .asScala
+      .map(header => EmailHeader(
+        EmailHeaderName(header.getName),
+        EmailHeaderValue(new String(header.getRaw.toByteArray)
+          .replace(header.getName + ":", ""))))
+      .toList
   }
 }
 
@@ -94,4 +108,6 @@ case class Email(id: MessageId,
                  bodyStructure: EmailBodyPart,
                  textBody: List[EmailBodyPart],
                  htmlBody: List[EmailBodyPart],
-                 attachments: List[EmailBodyPart])
+                 attachments: List[EmailBodyPart],
+                 headers: List[EmailHeader])
+
