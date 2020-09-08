@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.mail
 
+import java.nio.charset.StandardCharsets.US_ASCII
+
 import eu.timepit.refined
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
@@ -87,7 +89,7 @@ object Email {
         textBody = bodyStructure.textBody,
         htmlBody = bodyStructure.htmlBody,
         attachments = bodyStructure.attachments,
-        asEmailHeaders(mime4JMessage.getHeader)
+        headers = asEmailHeaders(mime4JMessage.getHeader)
       )
     }
   }
@@ -97,8 +99,8 @@ object Email {
       .asScala
       .map(header => EmailHeader(
         EmailHeaderName(header.getName),
-        EmailHeaderValue(new String(header.getRaw.toByteArray)
-          .replace(header.getName + ":", ""))))
+        EmailHeaderValue(new String(header.getRaw.toByteArray, US_ASCII)
+          .substring(header.getName.length + 1))))
       .toList
   }
 }
