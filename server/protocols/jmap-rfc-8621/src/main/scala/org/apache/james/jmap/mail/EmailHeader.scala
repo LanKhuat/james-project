@@ -25,7 +25,7 @@ object EmailHeader {
   def apply(field: Field): EmailHeader = EmailHeader(EmailHeaderName(field.getName), EmailHeaderValue(field.getBody))
 }
 
-case class EmailHeaderName(value: String)
-case class EmailHeaderValue(value: String)
+case class EmailHeaderName(value: String) extends AnyVal
+case class EmailHeaderValue(value: String) extends AnyVal
 
 case class EmailHeader(name: EmailHeaderName, value: EmailHeaderValue)
