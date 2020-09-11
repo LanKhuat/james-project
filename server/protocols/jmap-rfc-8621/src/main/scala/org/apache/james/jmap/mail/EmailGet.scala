@@ -30,6 +30,7 @@ import eu.timepit.refined.numeric.NonNegative
 import org.apache.james.jmap.api.model.Preview
 import org.apache.james.jmap.mail.Email.{UnparsedEmailId, sanitizeSize}
 import org.apache.james.jmap.mail.EmailGetRequest.MaxBodyValueBytes
+import org.apache.james.jmap.mail.EmailHeaders.{SPECIFIC_HEADER_PREFIX, sanitizeHeader}
 import org.apache.james.jmap.model.State.State
 import org.apache.james.jmap.model.{AccountId, Properties, UTCDate}
 import org.apache.james.mailbox.model.{MessageId, MessageResult}
@@ -111,7 +112,11 @@ case class EmailGetRequest(accountId: AccountId,
           attachments = bodyStructure.attachments,
           bodyValues = bodyValues,
           hasAttachment = HasAttachment(!firstMessage.getLoadedAttachments.isEmpty),
-          preview = preview))
+          preview = preview),
+        specificHeaders = properties.getOrElse(Properties.empty()).value
+          .filter(property => property.startsWith(SPECIFIC_HEADER_PREFIX))
+          .map(property => (sanitizeHeader(property), asEmailHeaderValue(mime4JMessage.getHeader.getField(property.substring(SPECIFIC_HEADER_PREFIX.length)))))
+          .toMap)
     }
   }
 
@@ -179,6 +184,12 @@ case class EmailGetRequest(accountId: AccountId,
         EmailHeaderValue(new String(header.getRaw.toByteArray, US_ASCII)
           .substring(header.getName.length + 1))))
       .toList
+
+  private def asEmailHeaderValue(field: Field): EmailHeaderValue =
+    Option(field)
+      .filter(_!= null)
+      .map(field => EmailHeaderValue(new String(field.getRaw.toByteArray, US_ASCII).substring(field.getName.length + 1)))
+      .getOrElse(EmailHeaderValue(null))
 }
 
 case class EmailNotFound(value: Set[UnparsedEmailId]) {

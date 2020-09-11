@@ -312,11 +312,13 @@ class Serializer @Inject() (mailboxIdFactory: MailboxId.Factory) {
     implicit val emailBodyWrites: Writes[EmailBody] = Json.writes[EmailBody]
 
     val emailWrites: OWrites[Email] = (JsPath.write[EmailMetadata] and
-        JsPath.write[EmailHeaders] and
-        JsPath.write[EmailBody]) (unlift(Email.unapply))
+      JsPath.write[EmailHeaders] and
+      JsPath.write[EmailBody] and
+      JsPath.write[Map[String, EmailHeaderValue]]) (unlift(Email.unapply))
 
-    emailWrites.transform(obj => properties.filter(obj))
+    emailWrites.transform(properties.filter(_))
   }
+
   private implicit def emailGetResponseWrites(implicit emailWrites: Writes[Email]): Writes[EmailGetResponse] = Json.writes[EmailGetResponse]
   private implicit def emailQueryResponseWrites: OWrites[EmailQueryResponse] = Json.writes[EmailQueryResponse]
 
