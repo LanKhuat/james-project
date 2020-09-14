@@ -27,6 +27,7 @@ import cats.implicits._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
 import eu.timepit.refined.numeric.NonNegative
+import eu.timepit.refined.types.string.NonEmptyString
 import org.apache.james.jmap.api.model.Preview
 import org.apache.james.jmap.mail.Email.{UnparsedEmailId, sanitizeSize}
 import org.apache.james.jmap.mail.EmailGetRequest.MaxBodyValueBytes
@@ -55,6 +56,20 @@ object EmailGetRequest {
   type MaxBodyValueBytes = Int Refined NonNegative
 
   val ZERO: MaxBodyValueBytes = 0
+}
+
+object SpecificHeaderRequest {
+  def from(property: NonEmptyString): Either[NonEmptyString, SpecificHeaderRequest] = property match {
+    case property if property.value.equals(SPECIFIC_HEADER_PREFIX) => Left(property)
+    case property if property.startsWith(SPECIFIC_HEADER_PREFIX)  =>
+      val headerName = property.substring(SPECIFIC_HEADER_PREFIX.length)
+      if (headerName.contains(":")) {
+        Left(property)
+      } else {
+        scala.Right(SpecificHeaderRequest(property, headerName))
+      }
+    case _ => Left(property)
+  }
 }
 
 case class EmailGetRequest(accountId: AccountId,
@@ -114,8 +129,8 @@ case class EmailGetRequest(accountId: AccountId,
           hasAttachment = HasAttachment(!firstMessage.getLoadedAttachments.isEmpty),
           preview = preview),
         specificHeaders = properties.getOrElse(Properties.empty()).value
-          .filter(property => property.startsWith(SPECIFIC_HEADER_PREFIX))
-          .map(property => (property.value, asEmailHeaderValue(mime4JMessage.getHeader.getField(property.substring(SPECIFIC_HEADER_PREFIX.length)))))
+          .flatMap(property => SpecificHeaderRequest.from(property).toOption)
+          .map(_.retrieveHeader(mime4JMessage))
           .toMap)
     }
   }
@@ -181,14 +196,9 @@ case class EmailGetRequest(accountId: AccountId,
       .asScala
       .map(header => EmailHeader(
         EmailHeaderName(header.getName),
-        EmailHeaderValue(Some(new String(header.getRaw.toByteArray, US_ASCII)
-          .substring(header.getName.length + 1)))))
+        EmailHeaderValue(new String(header.getRaw.toByteArray, US_ASCII)
+          .substring(header.getName.length + 1))))
       .toList
-
-  private def asEmailHeaderValue(field: Field): EmailHeaderValue =
-    Option(field)
-      .map(field => EmailHeaderValue.from(field))
-      .getOrElse(EmailHeaderValue(None))
 }
 
 case class EmailNotFound(value: Set[UnparsedEmailId]) {
@@ -199,3 +209,9 @@ case class EmailGetResponse(accountId: AccountId,
                             state: State,
                             list: List[Email],
                             notFound: EmailNotFound)
+
+case class SpecificHeaderRequest(headerName: NonEmptyString, property: String) {
+  def retrieveHeader(message: Message): (String, Option[EmailHeaderValue]) = (headerName,
+    Option(message.getHeader.getField(property))
+    .map(field => EmailHeaderValue.from(field)))
+}

@@ -314,7 +314,7 @@ class Serializer @Inject() (mailboxIdFactory: MailboxId.Factory) {
     val emailWrites: OWrites[Email] = (JsPath.write[EmailMetadata] and
       JsPath.write[EmailHeaders] and
       JsPath.write[EmailBody] and
-      JsPath.write[Map[String, EmailHeaderValue]]) (unlift(Email.unapply))
+      JsPath.write[Map[String, Option[EmailHeaderValue]]]) (unlift(Email.unapply))
 
     emailWrites.transform(properties.filter(_))
   }

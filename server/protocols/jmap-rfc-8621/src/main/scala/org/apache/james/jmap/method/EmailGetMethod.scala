@@ -21,12 +21,12 @@ package org.apache.james.jmap.method
 import java.time.ZoneId
 
 import eu.timepit.refined.auto._
+import eu.timepit.refined.types.string.NonEmptyString
 import javax.inject.Inject
 import org.apache.james.jmap.api.model.Preview
 import org.apache.james.jmap.json.Serializer
 import org.apache.james.jmap.mail.Email.UnparsedEmailId
-import org.apache.james.jmap.mail.EmailHeaders.SPECIFIC_HEADER_PREFIX
-import org.apache.james.jmap.mail.{Email, EmailBodyPart, EmailGetRequest, EmailGetResponse, EmailIds, EmailNotFound}
+import org.apache.james.jmap.mail.{Email, EmailBodyPart, EmailGetRequest, EmailGetResponse, EmailIds, EmailNotFound, SpecificHeaderRequest}
 import org.apache.james.jmap.model.CapabilityIdentifier.CapabilityIdentifier
 import org.apache.james.jmap.model.DefaultCapabilities.{CORE_CAPABILITY, MAIL_CAPABILITY}
 import org.apache.james.jmap.model.Invocation.{Arguments, MethodName}
@@ -115,17 +115,17 @@ class EmailGetMethod @Inject() (serializer: Serializer,
     request.properties match {
       case None => Right(Email.defaultProperties)
       case Some(properties) =>
-        val mayContainsSpecificHeaders = properties -- Email.allowedProperties
-        if (mayContainsSpecificHeaders.isEmpty()) {
-          Right(properties ++ Email.idProperty)
+        val invalidProperties: Set[NonEmptyString] = properties.value
+          .flatMap(property => SpecificHeaderRequest.from(property)
+            .fold(
+              invalidProperty => Some(invalidProperty),
+              _ => None
+            )) -- Email.allowedProperties.value
+
+        if (invalidProperties.nonEmpty) {
+          Left(new IllegalArgumentException(s"The following properties [${invalidProperties.map(p => p.value).mkString(", ")}] do not exist."))
         } else {
-          val invalidProperties = mayContainsSpecificHeaders.value
-            .filter(p => !p.value.startsWith(SPECIFIC_HEADER_PREFIX) || p.substring(SPECIFIC_HEADER_PREFIX.length).contains(":") || p.substring(SPECIFIC_HEADER_PREFIX.length).isEmpty)
-          if (invalidProperties.nonEmpty) {
-            Left(new IllegalArgumentException(s"The following properties [${Properties(invalidProperties).format()}] do not exist."))
-          } else {
-            Right(properties ++ Email.idProperty)
-          }
+          Right(properties ++ Email.idProperty)
         }
     }
 

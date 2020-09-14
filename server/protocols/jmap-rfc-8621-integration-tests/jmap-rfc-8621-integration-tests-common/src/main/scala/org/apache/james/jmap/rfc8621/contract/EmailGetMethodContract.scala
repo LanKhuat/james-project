@@ -5316,7 +5316,7 @@ trait EmailGetMethodContract {
   }
 
   @Test
-  def emailGetShouldReturnNullWhenEmptySpecificUnparsedHeaders(server: GuiceJamesServer): Unit = {
+  def emailGetShouldRejectEmptySpecificUnparsedHeaders(server: GuiceJamesServer): Unit = {
     val bobPath = MailboxPath.inbox(BOB);
     server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobPath)
     val alicePath = MailboxPath.inbox(ALICE);

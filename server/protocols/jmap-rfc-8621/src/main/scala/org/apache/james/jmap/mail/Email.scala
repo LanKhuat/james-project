@@ -116,4 +116,4 @@ case class EmailBody(bodyStructure: EmailBodyPart,
 case class Email(metadata: EmailMetadata,
                  header: EmailHeaders,
                  body: EmailBody,
-                 specificHeaders: Map[String, EmailHeaderValue])
+                 specificHeaders: Map[String, Option[EmailHeaderValue]])
