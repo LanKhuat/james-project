@@ -22,7 +22,6 @@ package org.apache.james.jmap.model
 import eu.timepit.refined.collection.NonEmpty
 import eu.timepit.refined.refineV
 import eu.timepit.refined.types.string.NonEmptyString
-import org.apache.james.jmap.mail.EmailHeaders.sanitizeHeader
 import play.api.libs.json.JsObject
 
 object Properties {
@@ -52,6 +51,6 @@ case class Properties(value: Set[NonEmptyString]) {
     JsObject(o.fields.filter(entry => {
       val refined: Either[String, NonEmptyString] = refineV[NonEmpty](entry._1)
       refined.fold(e => throw new RuntimeException(e),
-        property => value.map(property => sanitizeHeader(property)).contains(property.value))
+        property => value.contains(property))
     }))
 }

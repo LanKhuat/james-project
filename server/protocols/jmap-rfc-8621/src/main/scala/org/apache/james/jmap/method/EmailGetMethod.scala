@@ -120,7 +120,7 @@ class EmailGetMethod @Inject() (serializer: Serializer,
           Right(properties ++ Email.idProperty)
         } else {
           val invalidProperties = mayContainsSpecificHeaders.value
-            .filter(p => !p.value.startsWith(SPECIFIC_HEADER_PREFIX) || p.substring(SPECIFIC_HEADER_PREFIX.length).contains(":"))
+            .filter(p => !p.value.startsWith(SPECIFIC_HEADER_PREFIX) || p.substring(SPECIFIC_HEADER_PREFIX.length).contains(":") || p.substring(SPECIFIC_HEADER_PREFIX.length).isEmpty)
           if (invalidProperties.nonEmpty) {
             Left(new IllegalArgumentException(s"The following properties [${Properties(invalidProperties).format()}] do not exist."))
           } else {

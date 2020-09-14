@@ -26,7 +26,6 @@ import eu.timepit.refined.collection.NonEmpty
 import eu.timepit.refined.numeric.NonNegative
 import eu.timepit.refined.refineV
 import org.apache.james.jmap.api.model.Preview
-import eu.timepit.refined.types.string.NonEmptyString
 import org.apache.james.jmap.mail.Email.Size
 import org.apache.james.jmap.model.{Properties, UTCDate}
 import org.apache.james.mailbox.model.{MailboxId, MessageId}
@@ -78,13 +77,6 @@ object HeaderMessageId {
 
 object EmailHeaders {
   val SPECIFIC_HEADER_PREFIX = "header:"
-
-  def sanitizeHeader(property: NonEmptyString): String = {
-    property.value match {
-      case property: String if property.startsWith(SPECIFIC_HEADER_PREFIX) => property.toLowerCase.replaceFirst(":.", ":" + property.charAt(SPECIFIC_HEADER_PREFIX.length).toUpper.toString)
-      case property => property
-    }
-  }
 }
 
 case class HeaderMessageId(value: String) extends AnyVal
