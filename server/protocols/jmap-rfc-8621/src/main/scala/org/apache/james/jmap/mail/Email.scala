@@ -45,7 +45,7 @@ import org.apache.james.mime4j.codec.DecodeMonitor
 import org.apache.james.mime4j.dom.field.{AddressListField, DateTimeField, MailboxField, MailboxListField}
 import org.apache.james.mime4j.dom.{Header, Message}
 import org.apache.james.mime4j.message.DefaultMessageBuilder
-import org.apache.james.mime4j.stream.{Field, MimeConfig}
+import org.apache.james.mime4j.stream.{MimeConfig}
 import org.apache.james.mime4j.util.MimeUtil
 import org.apache.james.mailbox.model.{MailboxId, MessageId}
 import org.apache.james.mime4j.stream.Field
@@ -171,6 +171,7 @@ object ParseOptions {
       .map({
         case "asRaw" => AsRaw
         case "asText" => AsText
+        case "asAddresses" => AsAddresses
       })
   }
 }
@@ -183,6 +184,9 @@ case object AsRaw extends ParseOption {
 }
 case object AsText extends ParseOption {
   override def extractHeaderValue(field: Field): Option[EmailHeaderValue] = Some(TextHeaderValue.from(field))
+}
+case object AsAddresses extends ParseOption {
+  override def extractHeaderValue(field: Field): Option[EmailHeaderValue] = Some(AddressesHeaderValue.from(field))
 }
 
 case class HeaderMessageId(value: String) extends AnyVal
@@ -252,15 +256,15 @@ object EmailHeaders {
         .toList)
       .filter(_.nonEmpty)
 
-  private def extractAddresses(mime4JMessage: Message, fieldName: String): Option[List[EmailAddress]] =
+  private def extractAddresses(mime4JMessage: Message, fieldName: String): Option[AddressesHeaderValue] =
     extractLastField(mime4JMessage, fieldName)
       .flatMap {
-        case f: AddressListField => Some(EmailAddress.from(f.getAddressList))
-        case f: MailboxListField => Some(EmailAddress.from(f.getMailboxList))
-        case f: MailboxField => Some(List(EmailAddress.from(f.getMailbox)))
+        case f: AddressListField => Some(AddressesHeaderValue(EmailAddress.from(f.getAddressList)))
+        case f: MailboxListField => Some(AddressesHeaderValue(EmailAddress.from(f.getMailboxList)))
+        case f: MailboxField => Some(AddressesHeaderValue(List(EmailAddress.from(f.getMailbox))))
         case _ => None
       }
-      .filter(_.nonEmpty)
+      .filter(_.value.nonEmpty)
 
   private def extractDate(mime4JMessage: Message, fieldName: String): Option[Date] =
     extractLastField(mime4JMessage, fieldName)
@@ -280,12 +284,12 @@ case class EmailHeaders(headers: List[EmailHeader],
                         messageId: Option[List[HeaderMessageId]],
                         inReplyTo: Option[List[HeaderMessageId]],
                         references: Option[List[HeaderMessageId]],
-                        to: Option[List[EmailAddress]],
-                        cc: Option[List[EmailAddress]],
-                        bcc: Option[List[EmailAddress]],
-                        from: Option[List[EmailAddress]],
-                        sender: Option[List[EmailAddress]],
-                        replyTo: Option[List[EmailAddress]],
+                        to: Option[AddressesHeaderValue],
+                        cc: Option[AddressesHeaderValue],
+                        bcc: Option[AddressesHeaderValue],
+                        from: Option[AddressesHeaderValue],
+                        sender: Option[AddressesHeaderValue],
+                        replyTo: Option[AddressesHeaderValue],
                         subject: Option[Subject],
                         sentAt: Option[UTCDate])
 
