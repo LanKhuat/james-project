@@ -39,16 +39,14 @@ import org.apache.james.jmap.method.ZoneIdProvider
 import org.apache.james.jmap.model.KeywordsFactory.LENIENT_KEYWORDS_FACTORY
 import org.apache.james.jmap.model.{Keywords, Properties, UTCDate}
 import org.apache.james.mailbox.model.FetchGroup.{FULL_CONTENT, HEADERS, MINIMAL}
-import org.apache.james.mailbox.model.{FetchGroup, MessageResult}
+import org.apache.james.mailbox.model.{FetchGroup, MailboxId, MessageId, MessageResult}
 import org.apache.james.mailbox.{MailboxSession, MessageIdManager}
 import org.apache.james.mime4j.codec.DecodeMonitor
 import org.apache.james.mime4j.dom.field.{AddressListField, DateTimeField, MailboxField, MailboxListField}
 import org.apache.james.mime4j.dom.{Header, Message}
 import org.apache.james.mime4j.message.DefaultMessageBuilder
-import org.apache.james.mime4j.stream.{MimeConfig}
+import org.apache.james.mime4j.stream.{Field, MimeConfig}
 import org.apache.james.mime4j.util.MimeUtil
-import org.apache.james.mailbox.model.{MailboxId, MessageId}
-import org.apache.james.mime4j.stream.Field
 import org.slf4j.{Logger, LoggerFactory}
 import reactor.core.scala.publisher.{SFlux, SMono}
 import reactor.core.scheduler.Schedulers
@@ -159,20 +157,16 @@ object HeaderMessageId {
   }
 }
 
-
 object ParseOptions {
   val allowedParseOption: Set[String] = Set("asRaw", "asText", "asAddresses", "asGroupedAddresses", "asMessageIds", "asDate", "asURLs")
 
   def validate(parseOption: String): Boolean = from(parseOption).isDefined
 
-  def from(value: String): Option[ParseOption] = {
-    allowedParseOption
-      .find(_.equals(value))
-      .map({
-        case "asRaw" => AsRaw
-        case "asText" => AsText
-        case "asAddresses" => AsAddresses
-      })
+  def from(value: String): Option[ParseOption] = value match {
+      case "asRaw" => Some(AsRaw)
+      case "asText" => Some(AsText)
+      case "asAddresses" => Some(AsAddresses)
+      case _ => None
   }
 }
 
