@@ -4506,9 +4506,11 @@ trait EmailQueryMethodContract {
 
   @Test
   def emailQueryShouldSupportTextFilterForHeaders(server: GuiceJamesServer): Unit = {
-    server.getProbe(classOf[MailboxProbeImpl]).createMailbox(inbox(BOB))
+    val mailboxProbe: MailboxProbeImpl = server.getProbe(classOf[MailboxProbeImpl])
 
-    val messageId1: MessageId = server.getProbe(classOf[MailboxProbeImpl])
+    mailboxProbe.createMailbox(inbox(BOB))
+
+    val messageId1: MessageId = mailboxProbe
       .appendMessage(BOB.asString, inbox(BOB), AppendCommand.from(Message.Builder
         .of
         .setSubject("a mail")
@@ -4518,7 +4520,7 @@ trait EmailQueryMethodContract {
         .build))
       .getMessageId
 
-    val messageId2: MessageId = server.getProbe(classOf[MailboxProbeImpl])
+    val messageId2: MessageId = mailboxProbe
       .appendMessage(BOB.asString, inbox(BOB), AppendCommand.from(Message.Builder
         .of
         .setSubject("another mail")
@@ -4528,7 +4530,7 @@ trait EmailQueryMethodContract {
         .build))
       .getMessageId
 
-    val messageId3: MessageId = server.getProbe(classOf[MailboxProbeImpl])
+    val messageId3: MessageId = mailboxProbe
       .appendMessage(BOB.asString, inbox(BOB), AppendCommand.from(Message.Builder
         .of
         .setSubject("another mail")
@@ -4537,7 +4539,7 @@ trait EmailQueryMethodContract {
         .build))
       .getMessageId
 
-    val messageId4: MessageId = server.getProbe(classOf[MailboxProbeImpl])
+    val messageId4: MessageId = mailboxProbe
       .appendMessage(BOB.asString, inbox(BOB), AppendCommand.from(Message.Builder
         .of
         .setSubject("another mail")
@@ -4546,7 +4548,7 @@ trait EmailQueryMethodContract {
         .build))
       .getMessageId
 
-    val messageId5: MessageId = server.getProbe(classOf[MailboxProbeImpl])
+    val messageId5: MessageId = mailboxProbe
       .appendMessage(BOB.asString, inbox(BOB), AppendCommand.from(Message.Builder
         .of
         .setSubject("Subject with test word")
@@ -4554,7 +4556,7 @@ trait EmailQueryMethodContract {
         .build))
       .getMessageId
 
-    server.getProbe(classOf[MailboxProbeImpl])
+    mailboxProbe
       .appendMessage(BOB.asString, inbox(BOB), AppendCommand.from(Message.Builder
         .of
         .setSubject("should not be found mail")
@@ -4781,10 +4783,9 @@ trait EmailQueryMethodContract {
   }
 
   @Test
-  @Disabled("Not supported for in-memory test")
   def emailQueryFilterByTextShouldIgnoreMarkupsInHtmlBody(server: GuiceJamesServer): Unit = {
     server.getProbe(classOf[MailboxProbeImpl]).createMailbox(inbox(BOB))
-    val messageId1: MessageId = server.getProbe(classOf[MailboxProbeImpl])
+    server.getProbe(classOf[MailboxProbeImpl])
       .appendMessage(BOB.asString, inbox(BOB), AppendCommand.from(Message.Builder
         .of
         .setSubject("A mail")
