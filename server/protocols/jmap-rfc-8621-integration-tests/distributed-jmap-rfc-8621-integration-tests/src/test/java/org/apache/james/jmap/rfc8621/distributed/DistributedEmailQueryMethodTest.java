@@ -58,21 +58,21 @@ public class DistributedEmailQueryMethodTest implements EmailQueryMethodContract
 
     @Test
     @Override
-    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    @Disabled("JAMES-3416 Partial address matches is not supported")
     public void fromShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
 
     @Test
     @Override
-    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    @Disabled("JAMES-3416 Partial address matches is not supported")
     public void toShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
 
     @Test
     @Override
-    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    @Disabled("JAMES-3416 Partial address matching is not supported")
     public void ccShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
 
     @Test
     @Override
-    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    @Disabled("JAMES-3416 Partial address matching is not supported")
     public void bccShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
 }
