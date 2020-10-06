@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.elasticsearch.query;
 
-import static org.apache.james.backends.es.NodeMappingFactory.RAW;
 import static org.apache.james.backends.es.NodeMappingFactory.SPLIT_EMAIL;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
@@ -282,7 +281,8 @@ public class CriterionConverter {
             boolQuery()
                 .should(matchQuery(getFieldNameFromHeaderName(headerName) + "." + JsonMessageConstants.EMailer.NAME, value))
                 .should(matchQuery(getFieldNameFromHeaderName(headerName) + "." + JsonMessageConstants.EMailer.ADDRESS, value))
-                .should(matchQuery(getFieldNameFromHeaderName(headerName) + "." + JsonMessageConstants.EMailer.ADDRESS + "." + RAW, value)),
+            //    .should(matchQuery(getFieldNameFromHeaderName(headerName) + "." + JsonMessageConstants.EMailer.ADDRESS + "." + RAW, value))
+            ,
             ScoreMode.Avg);
     }
 
