@@ -23,6 +23,7 @@ import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
+import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.rfc8621.contract.EmailQueryMethodContract;
@@ -30,6 +31,8 @@ import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.blobstore.BlobStoreConfiguration;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class DistributedEmailQueryMethodTest implements EmailQueryMethodContract {
@@ -52,4 +55,24 @@ public class DistributedEmailQueryMethodTest implements EmailQueryMethodContract
         .server(configuration -> CassandraRabbitMQJamesServerMain.createServer(configuration)
             .overrideWith(new TestJMAPServerModule()))
         .build();
+
+    @Test
+    @Override
+    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    public void fromShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
+
+    @Test
+    @Override
+    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    public void toShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
+
+    @Test
+    @Override
+    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    public void ccShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
+
+    @Test
+    @Override
+    @Disabled("JAMES-XXXX Exact match for address fields is more prioritized. Partial matching is not supported currently")
+    public void bccShouldFilterResultsWhenNotAnAddress(GuiceJamesServer server) {}
 }
