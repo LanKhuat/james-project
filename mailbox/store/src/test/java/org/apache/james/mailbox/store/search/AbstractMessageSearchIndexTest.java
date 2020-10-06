@@ -63,6 +63,7 @@ import org.apache.james.util.ClassLoaderUtils;
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -850,6 +851,94 @@ public abstract class AbstractMessageSearchIndexTest {
 
         assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
             .containsOnly(m8.getUid());
+    }
+
+    @Test
+    @Disabled("JAMES-3416 Partial address matches is not supported")
+    void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecifiedWithDomainPartOfEmail() throws Exception {
+        assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
+        SearchQuery searchQuery = SearchQuery.of(SearchQuery.address(AddressType.From, "gmail.com"));
+
+        assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
+            .containsOnly(m8.getUid());
+    }
+
+    @Test
+    @Disabled("JAMES-3416 Partial address matches is not supported")
+    void addressShouldReturnUidHavingRightRecipientWhenToIsSpecifiedWithOnlyEmailUserPart() throws Exception {
+        assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
+        SearchQuery searchQuery = SearchQuery.of(SearchQuery.address(AddressType.To, "root"));
+
+        assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
+            .containsOnly(m1.getUid());
+    }
+
+    @Test
+    @Disabled("JAMES-3416 Partial address matches is not supported")
+    void addressShouldReturnUidHavingRightRecipientWhenToIsSpecifiedWithOnlyDomainPartSpecified() throws Exception {
+        assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
+        SearchQuery searchQuery = SearchQuery.of(SearchQuery.address(AddressType.To, "listes.minet.net"));
+
+        assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
+            .containsOnly(m1.getUid());
+    }
+
+    @Test
+    @Disabled("JAMES-3416 Partial address matches is not supported")
+    void addressShouldReturnUidHavingRightRecipientWhenCcIsSpecifiedWithOnlyUserPartOfTheEmail() throws Exception {
+        assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
+        SearchQuery searchQuery = SearchQuery.of(SearchQuery.address(AddressType.Cc, "monkey"));
+        assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
+            .containsOnly(m5.getUid());
+    }
+
+    @Test
+    @Disabled("JAMES-3416 Partial address matches is not supported")
+    void addressShouldReturnUidHavingRightRecipientWhenCcIsSpecifiedWithOnlyDomainPartOfTheEmail() throws Exception {
+        assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
+        SearchQuery searchQuery = SearchQuery.of(SearchQuery.address(AddressType.Cc, "any.com"));
+        assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
+            .containsOnly(m5.getUid());
+    }
+
+    @Test
+    @Disabled("JAMES-3416 Partial address matches is not supported")
+    void addressShouldReturnUidHavingRightRecipientWhenBccIsSpecifiedWithOnlyUserPartOfTheEmail() throws Exception {
+        assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
+        SearchQuery searchQuery = SearchQuery.of(SearchQuery.address(AddressType.Bcc, "monkey"));
+
+        assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
+            .containsOnly(m5.getUid());
+    }
+
+    @Test
+    @Disabled("JAMES-3416 Partial address matches is not supported")
+    void addressShouldReturnUidHavingRightRecipientWhenBccIsSpecifiedWithOnlyDomainPartOfTheEmail() throws Exception {
+        assumeTrue(storeMailboxManager
+            .getSupportedSearchCapabilities()
+            .contains(MailboxManager.SearchCapabilities.PartialEmailMatch));
+
+        SearchQuery searchQuery = SearchQuery.of(SearchQuery.address(AddressType.Bcc, "any.com"));
+        assertThat(messageSearchIndex.search(session, mailbox, searchQuery))
+            .containsOnly(m5.getUid());
     }
 
     @Test
