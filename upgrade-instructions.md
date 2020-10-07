@@ -21,6 +21,24 @@ Change list:
  - [LDAP users repository connection pool now defaults to false](#ldap-users-repository-connection-pool-now-defaults-to-false)
  - [Swift support has been dropped](#swift-support-has-been-dropped)
 
+### ElasticSearch indexing should match full email address
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-3416
+
+Concerned product: Distributed James
+
+Previously, we want address fields (From, To, Cc...) to be dynamically matched via ElasticSearch indexing configuration. 
+However currently this setup has some issues and does not work properly. 
+
+In the mean time, exact matching on address field should be prioritized. ElasticSearch mapping configuration need 
+to be changed for all the address fields (From, To, Cc, Bcc). 
+
+- `type` of the field should be changed from `text` to `keyword`.
+- remove the `keep_mail_and_url` search analyzer.
+- Add a `case_insensitive` normalizer for each of the address fields mapping.    
+
+Date 07/10/2020
+
 ### Swift support has been dropped
 
 Date 14/09/2020
