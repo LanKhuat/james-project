@@ -27,15 +27,21 @@ JIRA: https://issues.apache.org/jira/browse/JAMES-3416
 
 Concerned product: Distributed James
 
-Previously, we want address fields (From, To, Cc...) to be dynamically matched via ElasticSearch indexing configuration. 
-However currently this setup has some issues and does not work properly. 
+Previously, address fields (From, To, Cc...) were badly tokenized, resulting in a poor search experience. 
+For instance `bob@domain.tld` would match with `alice@domain.tld`.
 
-In the mean time, exact matching on address field should be prioritized. ElasticSearch mapping configuration need 
-to be changed for all the address fields (From, To, Cc, Bcc). 
+We redefined the index to have exact matching on the address field and improve the search experience.
+
+To benefit from these changes, you need to update the ElasticSearch index mapping. 
+Procedure is described here: https://github.com/apache/james-project/blob/master/docs/modules/servers/pages/distributed/operate/guide.adoc#on-the-fly-elasticsearch-index-setting-update.
+
+Here are the changes that need to be applied to the existing mapping:
 
 - `type` of the field should be changed from `text` to `keyword`.
 - remove the `keep_mail_and_url` search analyzer.
 - Add a `case_insensitive` normalizer for each of the address fields mapping.    
+
+Note that you can ignore this, and keep using the old mapping, but your address search experience will not be optimal.
 
 Date 07/10/2020
 
