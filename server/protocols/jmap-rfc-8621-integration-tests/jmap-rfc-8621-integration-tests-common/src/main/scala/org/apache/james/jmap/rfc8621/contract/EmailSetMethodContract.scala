@@ -253,7 +253,7 @@ trait EmailSetMethodContract {
   }
 
   @Test
-  def emailSetDestroyShouldFailWhenDelegatedMail(server: GuiceJamesServer): Unit = {
+  def emailSetDestroyShouldFailWhenForbidden(server: GuiceJamesServer): Unit = {
     val mailboxProbe = server.getProbe(classOf[MailboxProbeImpl])
 
     val andreMailbox: String = "andrecustom"
