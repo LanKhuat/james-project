@@ -23,19 +23,20 @@ import java.nio.charset.StandardCharsets
 import io.netty.handler.codec.http.HttpHeaderNames.ACCEPT
 import io.restassured.RestAssured.{`given`, requestSpecification}
 import io.restassured.http.ContentType.JSON
+import javax.mail.Flags
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
 import org.apache.http.HttpStatus.SC_OK
 import org.apache.james.GuiceJamesServer
 import org.apache.james.jmap.draft.JmapGuiceProbe
 import org.apache.james.jmap.http.UserCredential
-import org.apache.james.jmap.rfc8621.contract.Fixture.{ACCEPT_RFC8621_VERSION_HEADER, ANDRE, ANDRE_PASSWORD, BOB, BOB_PASSWORD, DOMAIN, authScheme, baseRequestSpecBuilder}
+import org.apache.james.jmap.rfc8621.contract.Fixture.{ACCEPT_RFC8621_VERSION_HEADER, ACCOUNT_ID, ANDRE, ANDRE_PASSWORD, BOB, BOB_PASSWORD, DOMAIN, authScheme, baseRequestSpecBuilder}
 import org.apache.james.mailbox.MessageManager.AppendCommand
 import org.apache.james.mailbox.model.MailboxACL.Right
 import org.apache.james.mailbox.model.{MailboxACL, MailboxId, MailboxPath, MessageId}
 import org.apache.james.mime4j.dom.Message
 import org.apache.james.modules.{ACLProbeImpl, MailboxProbeImpl}
 import org.apache.james.utils.DataProbeImpl
-import org.junit.jupiter.api.{BeforeEach, Test}
+import org.junit.jupiter.api.{BeforeEach, Nested, Test}
 
 trait EmailSetMethodContract {
   @BeforeEach
@@ -52,6 +53,70 @@ trait EmailSetMethodContract {
   }
 
   def randomMessageId: MessageId
+
+  @Test
+    def shouldAddKeywords(server: GuiceJamesServer): Unit = {
+      val message: Message = Fixture.createTestMessage
+
+      val flags: Flags = new Flags(Flags.Flag.ANSWERED)
+
+      val bobPath = MailboxPath.inbox(BOB)
+      server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobPath)
+      val messageId: MessageId = server.getProbe(classOf[MailboxProbeImpl]).appendMessage(BOB.asString(), bobPath, AppendCommand.builder()
+        .withFlags(flags)
+        .build(message))
+        .getMessageId
+
+      val request =
+        s"""{
+           |  "using": [
+           |    "urn:ietf:params:jmap:core",
+           |    "urn:ietf:params:jmap:mail"],
+           |  "methodCalls": [
+           |    ["Email/set", {
+           |      "accountId": "$ACCOUNT_ID",
+           |      "update": {
+           |        "${messageId.serialize}":{
+           |          "keywords": {
+           |             "music": true
+           |          }
+           |        }
+           |      }
+           |    }, "c1"],
+           |    ["Email/get",
+           |     {
+           |       "accountId": "$ACCOUNT_ID",
+           |       "ids": ["${messageId.serialize}"],
+           |       "properties": ["keywords"]
+           |     },
+           |     "c2"]]
+           |}""".stripMargin
+
+      val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post.prettyPeek()
+    .`then`
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response)
+      .inPath("methodResponses[0][1]")
+      .isEqualTo(String.format(
+        """
+          |  {
+          |     "id":"%s",
+          |    "keywords": {
+          |      "$Answered": true
+          |    }
+          |  }
+      """.stripMargin, messageId.serialize)
+      )
+    }
 
   @Test
   def emailSetShouldDestroyEmail(server: GuiceJamesServer): Unit = {

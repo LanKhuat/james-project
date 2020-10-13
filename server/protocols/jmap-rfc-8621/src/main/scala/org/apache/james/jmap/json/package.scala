@@ -39,7 +39,7 @@ package object json {
       })
     }
 
-  def readMapEntry[K, V](keyValidator: String => Either[String, K], valueTransformer: JsObject => V): Reads[Map[K, V]] = _.validate[Map[String, JsObject]]
+  def readMapEntry[K, V](keyValidator: String => Either[String, K], valueTransformer: JsObject => JsResult[V]): Reads[Map[K, V]] = _.validate[Map[String, JsObject]]
     .flatMap(mapWithStringKey =>{
       mapWithStringKey
         .foldLeft[Either[JsError, Map[K, V]]](scala.util.Right[JsError, Map[K, V]](Map.empty))((acc: Either[JsError, Map[K, V]], keyValue) => {
@@ -49,7 +49,11 @@ package object json {
               val refinedKey: Either[String, K] = keyValidator.apply(keyValue._1)
               refinedKey match {
                 case Left(error) => Left(JsError(error))
-                case scala.util.Right(unparsedK) => scala.util.Right(validatedAcc + (unparsedK -> valueTransformer.apply(keyValue._2)))
+                case scala.util.Right(unparsedK) =>
+                  val transformValue: JsResult[V] = valueTransformer.apply(keyValue._2)
+                  transformValue.fold(
+                    error => Left(JsError(error)),
+                    v => scala.util.Right(validatedAcc + (unparsedK -> v)))
               }
           }
         }) match {

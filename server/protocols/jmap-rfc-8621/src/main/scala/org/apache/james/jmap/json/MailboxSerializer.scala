@@ -125,10 +125,11 @@ class MailboxSerializer @Inject()(mailboxIdFactory: MailboxId.Factory) {
 
   private implicit val mapPatchObjectByMailboxIdReads: Reads[Map[UnparsedMailboxId, MailboxPatchObject]] =
     readMapEntry[UnparsedMailboxId, MailboxPatchObject](s => refineV[UnparsedMailboxIdConstraint](s),
-      o => MailboxPatchObject(o.value.toMap))
+      o => JsSuccess(MailboxPatchObject(o.value.toMap)))
 
   private implicit val mapCreationRequestByMailBoxCreationId: Reads[Map[MailboxCreationId, JsObject]] =
-    readMapEntry[MailboxCreationId, JsObject](s => refineV[NonEmpty](s), o => o)
+    readMapEntry[MailboxCreationId, JsObject](s => refineV[NonEmpty](s),
+      o => JsSuccess(o))
 
   private implicit val mailboxSetRequestReads: Reads[MailboxSetRequest] = Json.reads[MailboxSetRequest]
 

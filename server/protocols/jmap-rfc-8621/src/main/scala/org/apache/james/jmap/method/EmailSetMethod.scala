@@ -40,6 +40,13 @@ import scala.jdk.CollectionConverters._
 
 case class MessageNotFoundExeception(messageId: MessageId) extends Exception
 
+class EmailSetMethod @Inject()(serializer: EmailSetSerializer,
+                               messageIdManager: MessageIdManager,
+                               messageIdFactory: MessageId.Factory,
+                               val metricFactory: MetricFactory,
+                               val sessionSupplier: SessionSupplier) extends MethodRequiringAccountId[EmailSetRequest] {
+
+
 case class DestroyResults(results: Seq[DestroyResult]) {
   def destroyed: Option[DestroyIds] = {
     Option(results.flatMap({
@@ -86,11 +93,35 @@ case class DestroyFailure(unparsedMessageId: UnparsedMessageId, e: Throwable) ex
   }
 }
 
-class EmailSetMethod @Inject()(serializer: EmailSetSerializer,
-                               messageIdManager: MessageIdManager,
-                               messageIdFactory: MessageId.Factory,
-                               val metricFactory: MetricFactory,
-                               val sessionSupplier: SessionSupplier) extends MethodRequiringAccountId[EmailSetRequest] {
+trait UpdateResult
+case class UpdateSuccess(messageId: MessageId) extends UpdateResult
+case class UpdateFailure(unparsedMessageId: UnparsedMessageId, e: Throwable) extends UpdateResult {
+  def asMessageSetError: SetError = e match {
+    case _ => SetError.serverFail(SetErrorDescription(e.getMessage))
+  }
+}
+case class UpdateResults(results: Seq[UpdateResult]) {
+  def updated: Option[Map[MessageId, Unit]] = {
+    Option(results.flatMap({
+      result => result match {
+        case result: UpdateSuccess => Some(result.messageId, ())
+        case _ => None
+      }
+    }).toMap).filter(_.nonEmpty)
+  }
+
+  def notUpdated: Option[Map[UnparsedMessageId, SetError]] = {
+    Option(results.flatMap({
+      result => result match {
+        case failure: UpdateFailure => Some(failure)
+        case _ => None
+      }
+    })
+      .map(failure => (failure.unparsedMessageId, failure.asMessageSetError))
+      .toMap)
+      .filter(_.nonEmpty)
+  }
+}
 
   override val methodName: MethodName = MethodName("Email/set")
   override val requiredCapabilities: Capabilities = Capabilities(CORE_CAPABILITY, MAIL_CAPABILITY)
@@ -98,12 +129,14 @@ class EmailSetMethod @Inject()(serializer: EmailSetSerializer,
   override def doProcess(capabilities: Set[CapabilityIdentifier], invocation: InvocationWithContext, mailboxSession: MailboxSession, request: EmailSetRequest): SMono[InvocationWithContext] = {
     for {
       destroyResults <- destroy(request, mailboxSession)
+      updateResults <- update(request, mailboxSession)
     } yield InvocationWithContext(
         invocation = Invocation(
           methodName = invocation.invocation.methodName,
           arguments = Arguments(serializer.serialize(EmailSetResponse(
             accountId = request.accountId,
             newState = State.INSTANCE,
+            updated = updateResults.updated,
             destroyed = destroyResults.destroyed,
             notDestroyed = destroyResults.notDestroyed))),
           methodCallId = invocation.invocation.methodCallId),
@@ -123,6 +156,19 @@ class EmailSetMethod @Inject()(serializer: EmailSetSerializer,
       .flatMap(id => deleteMessage(id, mailboxSession))
       .collectSeq()
       .map(DestroyResults)
+
+  private def update(emailSetRequest: EmailSetRequest, mailboxSession: MailboxSession): SMono[UpdateResults] = {
+    emailSetRequest.update.map(
+      updates => SFlux.fromIterable(updates)
+        .flatMap({
+          case (unparsedMessageId, _) =>
+            EmailSet.parse(messageIdFactory)(unparsedMessageId)
+              .fold(e => SMono.just(UpdateFailure(unparsedMessageId, e)),
+                messageId => SMono.just(UpdateSuccess(messageId)))
+        })
+        .collectSeq().map(UpdateResults(_)))
+      .getOrElse(SMono.empty)
+  }
 
   private def deleteMessage(destroyId: UnparsedMessageId, mailboxSession: MailboxSession): SMono[DestroyResult] =
     EmailSet.parse(messageIdFactory)(destroyId)

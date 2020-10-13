@@ -24,7 +24,7 @@ import eu.timepit.refined.collection.NonEmpty
 import org.apache.james.jmap.mail.EmailSet.UnparsedMessageId
 import org.apache.james.jmap.method.WithAccountId
 import org.apache.james.jmap.model.State.State
-import org.apache.james.jmap.model.{AccountId, SetError}
+import org.apache.james.jmap.model.{AccountId, Keywords, SetError}
 import org.apache.james.mailbox.model.MessageId
 
 import scala.util.Try
@@ -45,11 +45,15 @@ object EmailSet {
 case class DestroyIds(value: Seq[UnparsedMessageId])
 
 case class EmailSetRequest(accountId: AccountId,
+                           update: Option[Map[UnparsedMessageId, EmailSetUpdate]],
                            destroy: Option[DestroyIds]) extends WithAccountId
 
 case class EmailSetResponse(accountId: AccountId,
                             newState: State,
+                            updated: Option[Map[MessageId, Unit]],
                             destroyed: Option[DestroyIds],
                             notDestroyed: Option[Map[UnparsedMessageId, SetError]])
+
+case class EmailSetUpdate(keywords: Option[Keywords])
 
 
