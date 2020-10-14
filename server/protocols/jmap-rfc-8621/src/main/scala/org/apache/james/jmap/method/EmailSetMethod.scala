@@ -167,7 +167,7 @@ case class UpdateResults(results: Seq[UpdateResult]) {
                 messageId => SMono.just(UpdateSuccess(messageId)))
         })
         .collectSeq().map(UpdateResults(_)))
-      .getOrElse(SMono.empty)
+      .getOrElse(SMono.just(UpdateResults(Seq())))
   }
 
   private def deleteMessage(destroyId: UnparsedMessageId, mailboxSession: MailboxSession): SMono[DestroyResult] =

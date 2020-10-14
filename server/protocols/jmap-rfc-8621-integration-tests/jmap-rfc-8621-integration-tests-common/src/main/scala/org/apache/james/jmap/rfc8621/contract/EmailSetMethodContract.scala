@@ -36,7 +36,7 @@ import org.apache.james.mailbox.model.{MailboxACL, MailboxId, MailboxPath, Messa
 import org.apache.james.mime4j.dom.Message
 import org.apache.james.modules.{ACLProbeImpl, MailboxProbeImpl}
 import org.apache.james.utils.DataProbeImpl
-import org.junit.jupiter.api.{BeforeEach, Nested, Test}
+import org.junit.jupiter.api.{BeforeEach, Test}
 
 trait EmailSetMethodContract {
   @BeforeEach
@@ -96,7 +96,7 @@ trait EmailSetMethodContract {
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
       .body(request)
     .when
-      .post.prettyPeek()
+      .post
     .`then`
       .statusCode(SC_OK)
       .contentType(JSON)
@@ -109,9 +109,10 @@ trait EmailSetMethodContract {
       .isEqualTo(String.format(
         """
           |  {
-          |     "id":"%s",
-          |    "keywords": {
-          |      "$Answered": true
+          |    "accountId":"29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+          |    "newState": "000001",
+          |    "updated": {
+          |      "1": null
           |    }
           |  }
       """.stripMargin, messageId.serialize)
