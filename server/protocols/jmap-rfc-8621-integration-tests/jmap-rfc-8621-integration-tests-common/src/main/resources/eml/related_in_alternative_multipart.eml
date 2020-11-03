@@ -1,0 +1,109 @@
+Return-Path: <bT.74u8ys9830=qv0t5ox5badi=xjvj9dcxcu@em266739.qa.open-paas.org>
+MIME-Version: 1.0
+X-MEETING-METHOD: CANCEL
+X-MEETING-UID: da7c39c5-1787-4409-b005-920fe0b2c1a2
+X-MEETING-SEQUENCE: 1
+X-MEETING-DTSTAMP: 20201110T025701Z
+Delivered-To: userd@qa.open-paas.org
+Received: from e2i266.smtp2go.com (EHLO e2i266.smtp2go.com) ([103.2.141.10])
+          by linagora.com (JAMES SMTP Server ) with ESMTP ID -1909754829
+          for <userd@qa.open-paas.org>;
+          Tue, 10 Nov 2020 02:57:06 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=smtpcorp.com; s=a1-4; h=Feedback-ID:X-Smtpcorp-Track:Date:Message-ID:
+	Subject:To:From:Reply-To:Sender:List-Unsubscribe;
+	bh=vFrASsKK//0r2I4v7kSByTg6RhgK20ZMYoI5jfmFw+M=; b=W2dtBJ7B2qtafDvJvi41WHEgRp
+	mdcWX4/QG3rhFfoRzHkfOiExytFznDVRet17WWJRSTwPw0Bvty08Dt6ojuyWOkH9nP6cVHmIqwGBE
+	U5c4Gugi9i8wQUGh1XUQ/cVZiaLCINrRyD1HwNmy2fsLJudQuVjUQhhGvqn87BzQInR0FQJHTrK6k
+	aAB/5MsGal1V96dr3AtSAM829kR/O6ndsSDr2gSgUOOU8e6yP8GnrdydQ2chdu1yYdAYt2tMthUR7
+	+sGB70aVQ1HTaMZMOmfbZsRnQFPSo/AkC7zXRDoqQ5SFoV4KkiuA2jQBOAN061rKtkfEMMCdTMM57
+	awZsn3mg==;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qa.open-paas.org;
+ i=@qa.open-paas.org; q=dns/txt; s=s266739; t=1604977026; h=from :
+ subject : to : message-id : date;
+ bh=vFrASsKK//0r2I4v7kSByTg6RhgK20ZMYoI5jfmFw+M=;
+ b=YiBOBo90Zdbf5JqAh5nU4u6henldirEGJrQ+6GfwOO8urWCujMY7Zkgdhvn4C9RU87hMt
+ ycQa7prhE5aBmNZrLBlAYaBv5F+B8A+g1qgG7IyZ/6a650NGwbdgAOYRgFIvHqjiN4pc3kt
+ ROUHv1m7JZhDU/HNtlAQ0ej265GJCEUejvG+NOL/pQw4vg9HNVdolsndywUxS1KVSgcVApx
+ lhx3X2OGw6mFh369IvPKVAQA6MZ5RPAZYh/SOHMRcs+KsAXUF9tSCU+ByvRoK1SmUr0Cljb
+ hv6HCM5mHoxPoljIo0IZXB5c6rHYfFDluXEPnqHSTAVmuReEa3VLoBn2u3Lw==
+Received: from [10.45.79.71] (helo=SmtpCorp)
+ by smtpcorp.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.92-S2G) (envelope-from <usera@qa.open-paas.org>)
+ id 1kcJqE-cp4VG9-09
+ for userd@qa.open-paas.org; Tue, 10 Nov 2020 02:57:06 +0000
+Received: from [10.54.36.8] (helo=smtp.linagora.com)
+ by smtpcorp.com with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.92-S2G) (envelope-from <usera@qa.open-paas.org>)
+ id 1kcJqC-DuufRl-7f
+ for userd@qa.open-paas.org; Tue, 10 Nov 2020 02:57:04 +0000
+Received: from [127.0.0.1] (unknown [172.24.64.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by smtp.linagora.com (Postfix) with ESMTPS id 0C5E240D07
+ for <userd@qa.open-paas.org>; Tue, 10 Nov 2020 03:57:03 +0100 (CET)
+Content-Type: multipart/mixed;
+ boundary="----sinikael-?=_1-16049770230370.5904051543231188"
+X-LINAGORA-Copy-Delivery-Done: 1
+From: usera@qa.open-paas.org
+To: userd@qa.open-paas.org
+Subject: Event <AT> Verify User Send Email To Attendees Tue November 10
+ 09:52:12 UTC 2020 from User A canceled
+Message-ID: <9c132e65-68c6-431d-e908-40cd76202019@qa.open-paas.org>
+X-Mailer: nodemailer (2.6.0; +http://nodemailer.com/;
+ SMTP/2.7.2[client:2.12.0])
+Date: Tue, 10 Nov 2020 02:57:03 +0000
+X-Smtpcorp-Track: 1kcJqCDIIfR_7f.qrGUrhUzsE74L
+Feedback-ID: 266739m:266739aja3LFS:266739spJBJJEdpb
+X-Report-Abuse: Please forward a copy of this message, including all headers,
+ to <abuse-report@smtp2go.com>
+
+------sinikael-?=_1-16049770230370.5904051543231188
+Content-Type: multipart/alternative;
+ boundary="----sinikael-?=_2-16049770230370.5904051543231188"
+
+------sinikael-?=_2-16049770230370.5904051543231188
+Content-Type: multipart/related; type="text/html";
+ boundary="----sinikael-?=_3-16049770230370.5904051543231188"
+
+------sinikael-?=_3-16049770230370.5904051543231188
+Content-Type: text/html
+Content-Transfer-Encoding: base64
+
+PHRhYmxlPjwvdGFibGU+
+------sinikael-?=_3-16049770230370.5904051543231188--
+
+------sinikael-?=_2-16049770230370.5904051543231188
+Content-Type: text/calendar; charset=UTF-8; method=CANCEL
+Content-Transfer-Encoding: base64
+
+QkVHSU46VkNBTEVOREFSDQpWRVJTSU9OOjIuMA0KUFJPRElEOi0vL1NhYnJlLy9TYWJyZSBWT2Jq
+ZWN0IDQuMS4zLy9FTg0KQ0FMU0NBTEU6R1JFR09SSUFODQpNRVRIT0Q6Q0FOQ0VMDQpCRUdJTjpW
+VElNRVpPTkUNClRaSUQ6QXNpYS9KYWthcnRhDQpCRUdJTjpTVEFOREFSRA0KVFpPRkZTRVRGUk9N
+OiswNzAwDQpUWk9GRlNFVFRPOiswNzAwDQpUWk5BTUU6V0lCDQpEVFNUQVJUOjE5NzAwMTAxVDAw
+MDAwMA0KRU5EOlNUQU5EQVJEDQpFTkQ6VlRJTUVaT05FDQpCRUdJTjpWRVZFTlQNClVJRDpkYTdj
+MzljNS0xNzg3LTQ0MDktYjAwNS05MjBmZTBiMmMxYTINCkRUU1RBTVA6MjAyMDExMTBUMDI1NzAx
+Wg0KU0VRVUVOQ0U6MQ0KU1VNTUFSWTo8QVQ+IFZlcmlmeSBVc2VyIFNlbmQgRW1haWwgVG8gQXR0
+ZW5kZWVzIFR1ZSBOb3ZlbWJlciAxMCAwOTo1MjoxMiBVDQogVEMgMjAyMA0KRFRTVEFSVDoyMDIw
+MTIwNlQwMzAwMDBaDQpEVEVORDoyMDIwMTIwNlQwNDAwMDBaDQpPUkdBTklaRVI7Q049VXNlciBB
+Om1haWx0bzp1c2VyYUBxYS5vcGVuLXBhYXMub3JnDQpBVFRFTkRFRTtDTj06bWFpbHRvOnVzZXJk
+QHFhLm9wZW4tcGFhcy5vcmcNCkVORDpWRVZFTlQNCkVORDpWQ0FMRU5EQVINCg==
+------sinikael-?=_2-16049770230370.5904051543231188--
+
+------sinikael-?=_1-16049770230370.5904051543231188
+Content-Type: application/ics; name=meeting.ics
+Content-Disposition: attachment; filename=meeting.ics
+Content-Transfer-Encoding: base64
+
+QkVHSU46VkNBTEVOREFSDQpWRVJTSU9OOjIuMA0KUFJPRElEOi0vL1NhYnJlLy9TYWJyZSBWT2Jq
+ZWN0IDQuMS4zLy9FTg0KQ0FMU0NBTEU6R1JFR09SSUFODQpNRVRIT0Q6Q0FOQ0VMDQpCRUdJTjpW
+VElNRVpPTkUNClRaSUQ6QXNpYS9KYWthcnRhDQpCRUdJTjpTVEFOREFSRA0KVFpPRkZTRVRGUk9N
+OiswNzAwDQpUWk9GRlNFVFRPOiswNzAwDQpUWk5BTUU6V0lCDQpEVFNUQVJUOjE5NzAwMTAxVDAw
+MDAwMA0KRU5EOlNUQU5EQVJEDQpFTkQ6VlRJTUVaT05FDQpCRUdJTjpWRVZFTlQNClVJRDpkYTdj
+MzljNS0xNzg3LTQ0MDktYjAwNS05MjBmZTBiMmMxYTINCkRUU1RBTVA6MjAyMDExMTBUMDI1NzAx
+Wg0KU0VRVUVOQ0U6MQ0KU1VNTUFSWTo8QVQ+IFZlcmlmeSBVc2VyIFNlbmQgRW1haWwgVG8gQXR0
+ZW5kZWVzIFR1ZSBOb3ZlbWJlciAxMCAwOTo1MjoxMiBVDQogVEMgMjAyMA0KRFRTVEFSVDoyMDIw
+MTIwNlQwMzAwMDBaDQpEVEVORDoyMDIwMTIwNlQwNDAwMDBaDQpPUkdBTklaRVI7Q049VXNlciBB
+Om1haWx0bzp1c2VyYUBxYS5vcGVuLXBhYXMub3JnDQpBVFRFTkRFRTtDTj06bWFpbHRvOnVzZXJk
+QHFhLm9wZW4tcGFhcy5vcmcNCkVORDpWRVZFTlQNCkVORDpWQ0FMRU5EQVINCg==
+------sinikael-?=_1-16049770230370.5904051543231188--
