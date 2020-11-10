@@ -29,10 +29,11 @@ import eu.timepit.refined.collection.NonEmpty
 import org.apache.james.jmap.core.Id.Id
 import org.apache.james.jmap.core.State.State
 import org.apache.james.jmap.core.{AccountId, SetError, UTCDate}
+import org.apache.james.jmap.mail.Disposition.INLINE
 import org.apache.james.jmap.mail.EmailSet.{EmailCreationId, UnparsedMessageId}
 import org.apache.james.jmap.method.WithAccountId
 import org.apache.james.mailbox.exception.AttachmentNotFoundException
-import org.apache.james.mailbox.model.{AttachmentId, AttachmentMetadata, MessageId, Cid => MailboxCid}
+import org.apache.james.mailbox.model.{AttachmentId, AttachmentMetadata, Cid, MessageId}
 import org.apache.james.mailbox.{AttachmentContentLoader, AttachmentManager, MailboxSession}
 import org.apache.james.mime4j.codec.EncoderUtil
 import org.apache.james.mime4j.codec.EncoderUtil.Usage
@@ -64,6 +65,7 @@ object EmailSet {
 object SubType {
   val HTML_SUBTYPE = "html"
   val MIXED_SUBTYPE = "mixed"
+  val RELATED_SUBTYPE = "related"
 }
 
 case class ClientPartId(id: Id)
@@ -75,10 +77,10 @@ case class ClientEmailBodyValue(value: String,
                                 isTruncated: Option[IsTruncated])
 
 object ClientCid {
-  def of(entity: Entity): Option[MailboxCid] =
+  def of(entity: Entity): Option[Cid] =
     Option(entity.getHeader.getField(FieldName.CONTENT_ID))
       .flatMap {
-        case contentIdField: ContentIdField => MailboxCid.parser().relaxed().unwrap().parse(contentIdField.getId).toScala
+        case contentIdField: ContentIdField => Cid.parser().relaxed().unwrap().parse(contentIdField.getId).toScala
         case _ => None
       }
 }
@@ -96,7 +98,7 @@ case class Attachment(blobId: BlobId,
                       location: Option[Location],
                       cid: Option[ClientCid]) {
 
-  def isInline: Boolean = disposition.contains("inline")
+  def isInline: Boolean = disposition.contains(INLINE)
 }
 
 case class EmailCreationRequest(mailboxIds: MailboxIds,
@@ -135,7 +137,7 @@ case class EmailCreationRequest(mailboxIds: MailboxIds,
         validateSpecificHeaders(builder)
           .flatMap(_ => {
             specificHeaders.map(_.asField).foreach(builder.addField)
-            attachments.map(attachments =>
+            attachments.filter(_.nonEmpty).map(attachments =>
               createMultipartWithAttachments(maybeHtmlBody, attachments, attachmentManager, attachmentContentLoader, mailboxSession)
                 .map(multipartBuilder => {
                   builder.setBody(multipartBuilder)
@@ -151,10 +153,8 @@ case class EmailCreationRequest(mailboxIds: MailboxIds,
                                              attachmentContentLoader: AttachmentContentLoader,
                                              mailboxSession: MailboxSession): Either[Exception, MultipartBuilder] = {
     val multipartBuilder = MultipartBuilder.create(SubType.MIXED_SUBTYPE)
-
     val maybeAttachments: Either[Exception, List[(Attachment, AttachmentMetadata, Array[Byte])]] =
       attachments
-        .filter(!_.isInline)
         .map(attachment => getAttachmentMetadata(attachment, attachmentManager, mailboxSession))
         .map(attachmentMetadataList => attachmentMetadataList
           .flatMap(attachmentAndMetadata => loadAttachment(attachmentAndMetadata._1, attachmentAndMetadata._2, attachmentContentLoader, mailboxSession)))
@@ -162,20 +162,63 @@ case class EmailCreationRequest(mailboxIds: MailboxIds,
 
     multipartBuilder.addBodyPart(BodyPartBuilder.create().setBody(maybeHtmlBody.getOrElse(""), SubType.HTML_SUBTYPE, StandardCharsets.UTF_8).build)
     maybeAttachments.map(list => {
-      list.foldLeft(multipartBuilder) {
-        case (acc, (attachment, storedMetadata, content)) =>
-          val bodypartBuilder = BodyPartBuilder.create()
-          bodypartBuilder.setBody(content, attachment.`type`.value)
-            .setField(contentTypeField(attachment, storedMetadata))
-            .setContentDisposition(attachment.disposition.getOrElse(Disposition.ATTACHMENT).value)
-          attachment.cid.map(_.asField).foreach(bodypartBuilder.addField)
-          attachment.location.map(_.asField).foreach(bodypartBuilder.addField)
-          attachment.language.map(_.asField).foreach(bodypartBuilder.addField)
-
-          acc.addBodyPart(bodypartBuilder)
-          acc
+      (list.filter(_._1.isInline), list.filter(!_._1.isInline)) match {
+        case (inlineAttachments, normalAttachments) if inlineAttachments.isEmpty => createMixedBody(maybeHtmlBody, normalAttachments)
+        case (inlineAttachments, normalAttachments) if normalAttachments.isEmpty => createRelatedBody(maybeHtmlBody, inlineAttachments)
+        case (inlineAttachments, normalAttachments) => createMixedRelatedBody(maybeHtmlBody, inlineAttachments, normalAttachments)
       }
     })
+  }
+
+  private def createMixedRelatedBody(maybeHtmlBody: Option[String], inlineAttachments: List[(Attachment, AttachmentMetadata, Array[Byte])], normalAttachments: List[(Attachment, AttachmentMetadata, Array[Byte])]) = {
+    val mixedMultipartBuilder = MultipartBuilder.create(SubType.MIXED_SUBTYPE)
+    val relatedMultipartBuilder = MultipartBuilder.create(SubType.RELATED_SUBTYPE)
+    relatedMultipartBuilder.addBodyPart(BodyPartBuilder.create().setBody(maybeHtmlBody.getOrElse(""), SubType.HTML_SUBTYPE, StandardCharsets.UTF_8).build)
+    inlineAttachments.foldLeft(relatedMultipartBuilder) {
+      case (acc, (attachment, storedMetadata, content)) =>
+        acc.addBodyPart(toBodypartBuilder(attachment, storedMetadata, content))
+        acc
+    }
+
+    mixedMultipartBuilder.addBodyPart(BodyPartBuilder.create().setBody(relatedMultipartBuilder.build))
+
+    normalAttachments.foldLeft(mixedMultipartBuilder) {
+      case (acc, (attachment, storedMetadata, content)) =>
+        acc.addBodyPart(toBodypartBuilder(attachment, storedMetadata, content))
+        acc
+    }
+  }
+
+  private def createMixedBody(maybeHtmlBody: Option[String], normalAttachments: List[(Attachment, AttachmentMetadata, Array[Byte])]) = {
+    val mixedMultipartBuilder = MultipartBuilder.create(SubType.MIXED_SUBTYPE)
+    mixedMultipartBuilder.addBodyPart(BodyPartBuilder.create().setBody(maybeHtmlBody.getOrElse(""), SubType.HTML_SUBTYPE, StandardCharsets.UTF_8).build)
+    normalAttachments.foldLeft(mixedMultipartBuilder) {
+      case (acc, (attachment, storedMetadata, content)) =>
+        acc.addBodyPart(toBodypartBuilder(attachment, storedMetadata, content))
+        acc
+    }
+  }
+
+  private def createRelatedBody(maybeHtmlBody: Option[String], inlineAttachments: List[(Attachment, AttachmentMetadata, Array[Byte])]) = {
+    val relatedMultipartBuilder = MultipartBuilder.create(SubType.RELATED_SUBTYPE)
+    relatedMultipartBuilder.addBodyPart(BodyPartBuilder.create().setBody(maybeHtmlBody.getOrElse(""), SubType.HTML_SUBTYPE, StandardCharsets.UTF_8).build)
+    inlineAttachments.foldLeft(relatedMultipartBuilder) {
+      case (acc, (attachment, storedMetadata, content)) =>
+        acc.addBodyPart(toBodypartBuilder(attachment, storedMetadata, content))
+        acc
+    }
+    relatedMultipartBuilder
+  }
+
+  private def toBodypartBuilder(attachment: Attachment, storedMetadata: AttachmentMetadata, content: Array[Byte]) = {
+    val bodypartBuilder = BodyPartBuilder.create()
+    bodypartBuilder.setBody(content, attachment.`type`.value)
+      .setField(contentTypeField(attachment, storedMetadata))
+      .setContentDisposition(attachment.disposition.getOrElse(Disposition.ATTACHMENT).value)
+    attachment.cid.map(_.asField).foreach(bodypartBuilder.addField)
+    attachment.location.map(_.asField).foreach(bodypartBuilder.addField)
+    attachment.language.map(_.asField).foreach(bodypartBuilder.addField)
+    bodypartBuilder
   }
 
   private def contentTypeField(attachment: Attachment, attachmentMetadata: AttachmentMetadata): ContentTypeField = {
