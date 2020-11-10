@@ -1989,9 +1989,9 @@ trait EmailSetMethodContract {
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
       .contentType("text/plain")
       .body(payload)
-      .when
+    .when
       .post(s"/upload/$ACCOUNT_ID/")
-      .`then`
+    .`then`
       .statusCode(SC_CREATED)
       .extract
       .body
@@ -2193,7 +2193,7 @@ trait EmailSetMethodContract {
         .addHeader(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
         .setBody(request)
         .build, new ResponseSpecBuilder().build)
-    .post
+      .post
     .`then`
       .statusCode(SC_OK)
       .contentType(JSON)
