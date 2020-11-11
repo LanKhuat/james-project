@@ -162,8 +162,8 @@ case class EmailCreationRequest(mailboxIds: MailboxIds,
     maybeAttachments.map(list => {
 
       (list.filter(_._1.isInline), list.filter(!_._1.isInline)) match {
-        case (inlineAttachments, normalAttachments) if inlineAttachments.isEmpty => createMixedBody(maybeHtmlBody, normalAttachments)
-        case (inlineAttachments, normalAttachments) if normalAttachments.isEmpty => createRelatedBody(maybeHtmlBody, inlineAttachments)
+        case (Nil, normalAttachments) => createMixedBody(maybeHtmlBody, normalAttachments)
+        case (inlineAttachments, Nil) => createRelatedBody(maybeHtmlBody, inlineAttachments)
         case (inlineAttachments, normalAttachments) => createMixedRelatedBody(maybeHtmlBody, inlineAttachments, normalAttachments)
       }
     })
