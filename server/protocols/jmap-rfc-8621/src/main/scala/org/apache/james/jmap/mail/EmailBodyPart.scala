@@ -266,14 +266,14 @@ case class EmailBodyPart(partId: PartId,
   private def attachmentsOfMultipart: List[EmailBodyPart] = subParts.getOrElse(Nil)
     .flatMap(_.attachments)
 
-  private def getBodyParts(bodyParts: List[EmailBodyPart], `type`: Type): List[EmailBodyPart] = {
-    if(bodyParts.isEmpty) {
+  private def getBodyParts(bodyParts: List[EmailBodyPart], `type`: Type): List[EmailBodyPart] =
+    if (bodyParts.isEmpty) {
       Nil
     } else {
       bodyParts.filter(subPart => subPart.`type`.equals(`type`)) ++
-        getBodyParts(bodyParts
-          .filter(subPart => !subPart.`type`.equals(`type`))
-          .flatMap(subPart => subPart.subParts.getOrElse(Nil)), `type`)
+        getBodyParts(
+          bodyParts
+            .filter(subPart => !subPart.`type`.equals(`type`))
+            .flatMap(subPart => subPart.subParts.getOrElse(Nil)), `type`)
     }
-  }
 }
