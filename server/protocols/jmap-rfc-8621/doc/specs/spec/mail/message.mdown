@@ -862,7 +862,7 @@ Due to the format of the Email object, when creating an Email there are a number
   `text/html`.
 - Within an EmailBodyPart:
   - The client may specify a *partId* OR a *blobId*, but not both. If a *partId* is
-    given, this *partId* MUST be present in the bodyValues property. <aside>htmlBody part needs to have a *partId*. attachments parts need to specify *blobId*. </aside>
+    given, this *partId* MUST be present in the bodyValues property. <aside>htmlBody part needs to have a *partId*. `attachments` parts need to specify *blobId*. </aside>
   - The charset property MUST be omitted if a partId is given (the part's
     content is included in bodyValues, and the server may choose any appropriate
     encoding).
