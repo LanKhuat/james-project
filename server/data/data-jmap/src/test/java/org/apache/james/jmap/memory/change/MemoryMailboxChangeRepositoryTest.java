@@ -21,7 +21,6 @@ package org.apache.james.jmap.memory.change;
 
 import org.apache.james.jmap.api.change.MailboxChangeRepository;
 import org.apache.james.jmap.api.change.MailboxChangeRepositoryContract;
-import org.apache.james.jmap.memory.vacation.MemoryMailboxChangeRepository;
 import org.junit.jupiter.api.BeforeEach;
 
 public class MemoryMailboxChangeRepositoryTest implements MailboxChangeRepositoryContract {

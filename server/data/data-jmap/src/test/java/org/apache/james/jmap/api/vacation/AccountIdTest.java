@@ -22,6 +22,7 @@ package org.apache.james.jmap.api.vacation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.james.jmap.api.model.AccountId;
 import org.junit.jupiter.api.Test;
 
 class AccountIdTest {

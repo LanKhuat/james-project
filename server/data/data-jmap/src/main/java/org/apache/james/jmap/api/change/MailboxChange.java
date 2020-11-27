@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.apache.james.jmap.api.vacation.AccountId;
+import org.apache.james.jmap.api.model.AccountId;
 import org.apache.james.mailbox.model.MailboxId;
 
 public class MailboxChange {
