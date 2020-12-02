@@ -22,17 +22,18 @@ package org.apache.james.jmap.change
 import java.time.ZonedDateTime
 import java.util.UUID
 
+import javax.mail.Flags
 import org.apache.james.jmap.api.change.MailboxChange.State
 import org.apache.james.jmap.api.change.{MailboxChange, MailboxChangeRepository}
 import org.apache.james.jmap.api.model.AccountId
 import org.apache.james.jmap.change.MailboxChangeListenerTest.ACCOUNT_ID
 import org.apache.james.jmap.memory.change.MemoryMailboxChangeRepository
-import org.apache.james.mailbox.MessageManager.{AppendCommand, AppendResult}
+import org.apache.james.mailbox.MessageManager.{AppendCommand, AppendResult, FlagsUpdateMode}
 import org.apache.james.mailbox.events.delivery.InVmEventDelivery
 import org.apache.james.mailbox.events.{InVMEventBus, MemoryEventDeadLetters, RetryBackoffConfiguration}
 import org.apache.james.mailbox.fixture.MailboxFixture.{ALICE, BOB}
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources
-import org.apache.james.mailbox.model.{MailboxACL, MailboxId, MailboxPath, TestId}
+import org.apache.james.mailbox.model.{MailboxACL, MailboxId, MailboxPath, MessageRange, TestId}
 import org.apache.james.mailbox.{MailboxManager, MailboxSessionUtil, MessageManager}
 import org.apache.james.metrics.tests.RecordingMetricFactory
 import org.assertj.core.api.Assertions.assertThat
@@ -121,6 +122,23 @@ class MailboxChangeListenerTest {
     mailboxManager
       .getMailbox(inboxId, mailboxSession)
       .appendMessage(AppendCommand.builder().build("header: value\r\n\r\nbody"), mailboxSession)
+
+    assertThat(repository.getSinceState(ACCOUNT_ID, state, None.toJava).block().getUpdated)
+      .containsExactly(inboxId)
+  }
+
+  @Test
+  def updateMessageFlagsShouldStoreUpdateEvent(): Unit = {
+    val mailboxSession = MailboxSessionUtil.create(BOB)
+    val path = MailboxPath.forUser(BOB, "test")
+    val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
+    val messageManager: MessageManager = mailboxManager.getMailbox(inboxId, mailboxSession)
+    messageManager.appendMessage(AppendCommand.builder().build("header: value\r\n\r\nbody"), mailboxSession)
+
+    val state = State.of(UUID.randomUUID)
+    repository.save(MailboxChange.of(ACCOUNT_ID, state, ZonedDateTime.now, List[MailboxId](TestId.of(0)).asJava, List().asJava, List().asJava)).block()
+
+    messageManager.setFlags(new Flags(Flags.Flag.SEEN), FlagsUpdateMode.ADD, MessageRange.all(), mailboxSession)
 
     assertThat(repository.getSinceState(ACCOUNT_ID, state, None.toJava).block().getUpdated)
       .containsExactly(inboxId)
