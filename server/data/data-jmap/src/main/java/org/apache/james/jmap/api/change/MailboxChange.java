@@ -26,6 +26,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.mail.Flags;
+
 import org.apache.james.jmap.api.model.AccountId;
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.MailboxListener.Added;
@@ -117,12 +119,17 @@ public class MailboxChange {
             return Optional.of(MailboxChange.of(AccountId.fromUsername(messageAdded.getUsername()), State.of(UUID.randomUUID()), now, ImmutableList.of(), ImmutableList.of(messageAdded.getMailboxId()), ImmutableList.of()));
         }
         if (event instanceof FlagsUpdated) {
-            FlagsUpdated messageAdded = (FlagsUpdated) event;
-            return Optional.of(MailboxChange.of(AccountId.fromUsername(messageAdded.getUsername()), State.of(UUID.randomUUID()), now, ImmutableList.of(), ImmutableList.of(messageAdded.getMailboxId()), ImmutableList.of()));
+            FlagsUpdated messageFlagUpdated = (FlagsUpdated) event;
+            boolean isSeenChanged = messageFlagUpdated.getUpdatedFlags()
+                .stream()
+                .anyMatch(flags -> flags.isChanged(Flags.Flag.SEEN));
+            if (isSeenChanged) {
+                return Optional.of(MailboxChange.of(AccountId.fromUsername(messageFlagUpdated.getUsername()), State.of(UUID.randomUUID()), now, ImmutableList.of(), ImmutableList.of(messageFlagUpdated.getMailboxId()), ImmutableList.of()));
+            }
         }
         if (event instanceof Expunged) {
-            Expunged messageAdded = (Expunged) event;
-            return Optional.of(MailboxChange.of(AccountId.fromUsername(messageAdded.getUsername()), State.of(UUID.randomUUID()), now, ImmutableList.of(), ImmutableList.of(messageAdded.getMailboxId()), ImmutableList.of()));
+            Expunged expunged = (Expunged) event;
+            return Optional.of(MailboxChange.of(AccountId.fromUsername(expunged.getUsername()), State.of(UUID.randomUUID()), now, ImmutableList.of(), ImmutableList.of(expunged.getMailboxId()), ImmutableList.of()));
         }
 
         return Optional.empty();

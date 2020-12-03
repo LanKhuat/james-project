@@ -21,7 +21,7 @@ package org.apache.james.jmap.change
 
 import javax.inject.Inject
 import org.apache.james.jmap.api.change.{MailboxChange, MailboxChangeRepository}
-import org.apache.james.mailbox.events.MailboxListener.{MailboxEvent, ReactiveGroupMailboxListener}
+import org.apache.james.mailbox.events.MailboxListener.ReactiveGroupMailboxListener
 import org.apache.james.mailbox.events.{Event, Group}
 import org.reactivestreams.Publisher
 import reactor.core.scala.publisher.SMono
@@ -37,5 +37,5 @@ case class MailboxChangeListener @Inject() (mailboxChangeRepository: MailboxChan
 
   override def getDefaultGroup: Group = MailboxChangeListenerGroup()
 
-  override def isHandling(event: Event): Boolean = event.isInstanceOf[MailboxEvent]
+  override def isHandling(event: Event): Boolean = MailboxChange.fromEvent(event).isPresent
 }

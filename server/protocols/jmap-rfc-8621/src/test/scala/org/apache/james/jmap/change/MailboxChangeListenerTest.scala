@@ -128,7 +128,7 @@ class MailboxChangeListenerTest {
   }
 
   @Test
-  def updateMessageFlagsShouldStoreUpdateEvent(): Unit = {
+  def addSeenFlagsShouldStoreUpdateEvent(): Unit = {
     val mailboxSession = MailboxSessionUtil.create(BOB)
     val path = MailboxPath.forUser(BOB, "test")
     val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
@@ -142,6 +142,61 @@ class MailboxChangeListenerTest {
 
     assertThat(repository.getSinceState(ACCOUNT_ID, state, None.toJava).block().getUpdated)
       .containsExactly(inboxId)
+  }
+
+  @Test
+  def removeSeenFlagsShouldStoreUpdateEvent(): Unit = {
+    val mailboxSession = MailboxSessionUtil.create(BOB)
+    val path = MailboxPath.forUser(BOB, "test")
+    val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
+    val messageManager: MessageManager = mailboxManager.getMailbox(inboxId, mailboxSession)
+    messageManager.appendMessage(AppendCommand.builder()
+      .withFlags(new Flags(Flags.Flag.SEEN))
+      .build("header: value\r\n\r\nbody"), mailboxSession)
+
+    val state = State.of(UUID.randomUUID)
+    repository.save(MailboxChange.of(ACCOUNT_ID, state, ZonedDateTime.now, List[MailboxId](TestId.of(0)).asJava, List().asJava, List().asJava)).block()
+
+    messageManager.setFlags(new Flags(Flags.Flag.SEEN), FlagsUpdateMode.REMOVE, MessageRange.all(), mailboxSession)
+
+    assertThat(repository.getSinceState(ACCOUNT_ID, state, None.toJava).block().getUpdated)
+      .containsExactly(inboxId)
+  }
+
+  @Test
+  def addOtherThanSeenFlagsShouldNotStoreUpdateEvent(): Unit = {
+    val mailboxSession = MailboxSessionUtil.create(BOB)
+    val path = MailboxPath.forUser(BOB, "test")
+    val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
+    val messageManager: MessageManager = mailboxManager.getMailbox(inboxId, mailboxSession)
+    messageManager.appendMessage(AppendCommand.builder().build("header: value\r\n\r\nbody"), mailboxSession)
+
+    val state = State.of(UUID.randomUUID)
+    repository.save(MailboxChange.of(ACCOUNT_ID, state, ZonedDateTime.now, List[MailboxId](TestId.of(0)).asJava, List().asJava, List().asJava)).block()
+
+    messageManager.setFlags(new Flags(Flags.Flag.ANSWERED), FlagsUpdateMode.ADD, MessageRange.all(), mailboxSession)
+
+    assertThat(repository.getSinceState(ACCOUNT_ID, state, None.toJava).block().getUpdated)
+      .isEmpty()
+  }
+
+  @Test
+  def updateOtherThanSeenFlagsShouldNotStoreUpdateEvent(): Unit = {
+    val mailboxSession = MailboxSessionUtil.create(BOB)
+    val path = MailboxPath.forUser(BOB, "test")
+    val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
+    val messageManager: MessageManager = mailboxManager.getMailbox(inboxId, mailboxSession)
+    messageManager.appendMessage(AppendCommand.builder()
+      .withFlags(new Flags(Flags.Flag.ANSWERED))
+      .build("header: value\r\n\r\nbody"), mailboxSession)
+
+    val state = State.of(UUID.randomUUID)
+    repository.save(MailboxChange.of(ACCOUNT_ID, state, ZonedDateTime.now, List[MailboxId](TestId.of(0)).asJava, List().asJava, List().asJava)).block()
+
+    messageManager.setFlags(new Flags(Flags.Flag.DELETED), FlagsUpdateMode.REPLACE, MessageRange.all(), mailboxSession)
+
+    assertThat(repository.getSinceState(ACCOUNT_ID, state, None.toJava).block().getUpdated)
+      .isEmpty()
   }
 
   @Test
