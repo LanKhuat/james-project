@@ -75,7 +75,7 @@ class MailboxChangeListenerTest {
   @Test
   def createMailboxShouldStoreCreatedEvent(): Unit = {
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     val mailboxSession = MailboxSessionUtil.create(BOB)
     val inboxId: MailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), mailboxSession).get
@@ -92,7 +92,7 @@ class MailboxChangeListenerTest {
     val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     mailboxManager.renameMailbox(path, newPath, mailboxSession)
 
@@ -103,7 +103,7 @@ class MailboxChangeListenerTest {
   @Test
   def updateMailboxACLShouldStoreUpdatedEvent(): Unit = {
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     val mailboxSession = MailboxSessionUtil.create(BOB)
     val path = MailboxPath.inbox(BOB)
@@ -122,7 +122,7 @@ class MailboxChangeListenerTest {
     val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     mailboxManager.applyRightsCommand(path, MailboxACL.command().forUser(ALICE).rights(MailboxACL.Right.Read).asAddition(), mailboxSession)
 
@@ -143,7 +143,7 @@ class MailboxChangeListenerTest {
     messageManager.appendMessage(AppendCommand.builder().build("header: value\r\n\r\nbody"), mailboxSession)
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     messageManager.setFlags(new Flags(Flags.Flag.SEEN), FlagsUpdateMode.ADD, MessageRange.all(), mailboxSession)
 
@@ -162,7 +162,7 @@ class MailboxChangeListenerTest {
       .build("header: value\r\n\r\nbody"), mailboxSession)
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     messageManager.setFlags(new Flags(Flags.Flag.SEEN), FlagsUpdateMode.REMOVE, MessageRange.all(), mailboxSession)
 
@@ -179,7 +179,7 @@ class MailboxChangeListenerTest {
     messageManager.appendMessage(AppendCommand.builder().build("header: value\r\n\r\nbody"), mailboxSession)
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     messageManager.setFlags(new Flags(Flags.Flag.ANSWERED), FlagsUpdateMode.ADD, MessageRange.all(), mailboxSession)
 
@@ -198,7 +198,7 @@ class MailboxChangeListenerTest {
       .build("header: value\r\n\r\nbody"), mailboxSession)
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     messageManager.setFlags(new Flags(Flags.Flag.DELETED), FlagsUpdateMode.REPLACE, MessageRange.all(), mailboxSession)
 
@@ -215,7 +215,7 @@ class MailboxChangeListenerTest {
     val appendResult: AppendResult = messageManager.appendMessage(AppendCommand.builder().build("header: value\r\n\r\nbody"), mailboxSession)
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
     messageManager.delete(List(appendResult.getId.getUid).asJava, mailboxSession)
 
     assertThat(repository.getSinceState(ACCOUNT_ID, state, None.toJava).block().getUpdated)
@@ -229,7 +229,7 @@ class MailboxChangeListenerTest {
     val inboxId: MailboxId = mailboxManager.createMailbox(path, mailboxSession).get
 
     val state = stateFactory.generate()
-    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).created(List[MailboxId](TestId.of(0)).asJava).build).block()
+    repository.save(MailboxChange.builder().accountId(ACCOUNT_ID).state(state).date(ZonedDateTime.now).isCountChange(false).created(List[MailboxId](TestId.of(0)).asJava).build).block()
 
     mailboxManager.deleteMailbox(inboxId, mailboxSession)
 

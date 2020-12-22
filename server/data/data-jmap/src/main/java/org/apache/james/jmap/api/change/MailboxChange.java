@@ -126,7 +126,12 @@ public class MailboxChange {
 
     @FunctionalInterface
     public interface RequiredDate {
-        Builder date(ZonedDateTime date);
+        RequiredIsCountChange date(ZonedDateTime date);
+    }
+
+    @FunctionalInterface
+    public interface RequiredIsCountChange {
+        Builder isCountChange(boolean isCountChange);
     }
 
     public static class Builder {
@@ -134,14 +139,16 @@ public class MailboxChange {
         private final State state;
         private final ZonedDateTime date;
         private boolean delegated;
+        private boolean isCountChange;
         private Optional<List<MailboxId>> created;
         private Optional<List<MailboxId>> updated;
         private Optional<List<MailboxId>> destroyed;
 
-        private Builder(AccountId accountId, State state, ZonedDateTime date) {
+        private Builder(AccountId accountId, State state, ZonedDateTime date, boolean isCountChange) {
             this.accountId = accountId;
             this.state = state;
             this.date = date;
+            this.isCountChange = isCountChange;
             this.created = Optional.empty();
             this.updated = Optional.empty();
             this.destroyed = Optional.empty();
@@ -149,6 +156,11 @@ public class MailboxChange {
 
         public Builder delegated() {
             this.delegated = true;
+            return this;
+        }
+
+        public Builder isCountChange(boolean isCountChange) {
+            this.isCountChange = isCountChange;
             return this;
         }
 
@@ -168,12 +180,12 @@ public class MailboxChange {
         }
 
         public MailboxChange build() {
-            return new MailboxChange(accountId, state, date, delegated, created.orElse(ImmutableList.of()), updated.orElse(ImmutableList.of()), destroyed.orElse(ImmutableList.of()));
+            return new MailboxChange(accountId, state, date, delegated, isCountChange, created.orElse(ImmutableList.of()), updated.orElse(ImmutableList.of()), destroyed.orElse(ImmutableList.of()));
         }
     }
 
     public static RequiredAccountId builder() {
-        return accountId -> state -> date -> new Builder(accountId, state, date);
+        return accountId -> state -> date -> isCountChange -> new Builder(accountId, state, date, isCountChange);
     }
 
     public static class Factory {
@@ -197,6 +209,7 @@ public class MailboxChange {
                     .accountId(AccountId.fromUsername(mailboxAdded.getUsername()))
                     .state(stateFactory.generate())
                     .date(now)
+                    .isCountChange(false)
                     .created(ImmutableList.of(mailboxAdded.getMailboxId()))
                     .build());
             }
@@ -207,6 +220,7 @@ public class MailboxChange {
                     .accountId(AccountId.fromUsername(mailboxRenamed.getUsername()))
                     .state(stateFactory.generate())
                     .date(now)
+                    .isCountChange(false)
                     .updated(ImmutableList.of(mailboxRenamed.getMailboxId()))
                     .build();
 
@@ -215,6 +229,7 @@ public class MailboxChange {
                         .accountId(AccountId.fromString(name))
                         .state(stateFactory.generate())
                         .date(now)
+                        .isCountChange(false)
                         .updated(ImmutableList.of(mailboxRenamed.getMailboxId()))
                         .delegated()
                         .build());
@@ -229,6 +244,7 @@ public class MailboxChange {
                     .accountId(AccountId.fromUsername(mailboxACLUpdated.getUsername()))
                     .state(stateFactory.generate())
                     .date(now)
+                    .isCountChange(false)
                     .updated(ImmutableList.of(mailboxACLUpdated.getMailboxId()))
                     .build();
 
@@ -237,6 +253,7 @@ public class MailboxChange {
                         .accountId(AccountId.fromString(name))
                         .state(stateFactory.generate())
                         .date(now)
+                        .isCountChange(false)
                         .updated(ImmutableList.of(mailboxACLUpdated.getMailboxId()))
                         .delegated()
                         .build());
@@ -251,6 +268,7 @@ public class MailboxChange {
                     .accountId(AccountId.fromUsername(mailboxDeletion.getUsername()))
                     .state(stateFactory.generate())
                     .date(now)
+                    .isCountChange(false)
                     .destroyed(ImmutableList.of(mailboxDeletion.getMailboxId()))
                     .build();
 
@@ -278,6 +296,7 @@ public class MailboxChange {
                     .accountId(AccountId.fromUsername(messageAdded.getUsername()))
                     .state(stateFactory.generate())
                     .date(now)
+                    .isCountChange(true)
                     .updated(ImmutableList.of(messageAdded.getMailboxId()))
                     .build();
 
@@ -286,6 +305,7 @@ public class MailboxChange {
                         .accountId(AccountId.fromString(name))
                         .state(stateFactory.generate())
                         .date(now)
+                        .isCountChange(true)
                         .updated(ImmutableList.of(messageAdded.getMailboxId()))
                         .delegated()
                         .build());
@@ -303,6 +323,7 @@ public class MailboxChange {
                         .accountId(AccountId.fromUsername(messageFlagUpdated.getUsername()))
                         .state(stateFactory.generate())
                         .date(now)
+                        .isCountChange(true)
                         .updated(ImmutableList.of(messageFlagUpdated.getMailboxId()))
                         .build();
 
@@ -311,6 +332,7 @@ public class MailboxChange {
                             .accountId(AccountId.fromString(name))
                             .state(stateFactory.generate())
                             .date(now)
+                            .isCountChange(true)
                             .updated(ImmutableList.of(messageFlagUpdated.getMailboxId()))
                             .delegated()
                             .build());
@@ -325,6 +347,7 @@ public class MailboxChange {
                     .accountId(AccountId.fromUsername(expunged.getUsername()))
                     .state(stateFactory.generate())
                     .date(now)
+                    .isCountChange(true)
                     .updated(ImmutableList.of(expunged.getMailboxId()))
                     .build();
 
@@ -333,6 +356,7 @@ public class MailboxChange {
                         .accountId(AccountId.fromString(name))
                         .state(stateFactory.generate())
                         .date(now)
+                        .isCountChange(true)
                         .updated(ImmutableList.of(expunged.getMailboxId()))
                         .delegated()
                         .build());
@@ -363,15 +387,17 @@ public class MailboxChange {
     private final State state;
     private final ZonedDateTime date;
     private final boolean delegated;
+    private final boolean isCountChange;
     private final List<MailboxId> created;
     private final List<MailboxId> updated;
     private final List<MailboxId> destroyed;
 
-    private MailboxChange(AccountId accountId, State state, ZonedDateTime date, boolean delegated, List<MailboxId> created, List<MailboxId> updated, List<MailboxId> destroyed) {
+    private MailboxChange(AccountId accountId, State state, ZonedDateTime date, boolean delegated, boolean isCountChange, List<MailboxId> created, List<MailboxId> updated, List<MailboxId> destroyed) {
         this.accountId = accountId;
         this.state = state;
         this.date = date;
         this.delegated = delegated;
+        this.isCountChange = isCountChange;
         this.created = created;
         this.updated = updated;
         this.destroyed = destroyed;
@@ -391,6 +417,10 @@ public class MailboxChange {
 
     public boolean isDelegated() {
         return delegated;
+    }
+
+    public boolean isCountChange() {
+        return isCountChange;
     }
 
     public List<MailboxId> getCreated() {
