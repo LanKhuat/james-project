@@ -17,40 +17,17 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory.change;
+package org.apache.james.jmap.cassandra.change.tables;
 
-import java.util.concurrent.atomic.AtomicInteger;
+public interface CassandraMailboxChangeTable {
 
-import org.apache.james.jmap.api.change.MailboxChangeRepository;
-import org.apache.james.jmap.api.change.MailboxChangeRepositoryContract;
-import org.apache.james.jmap.api.change.State;
-import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.TestId;
-import org.junit.jupiter.api.BeforeEach;
-
-public class MemoryMailboxChangeRepositoryTest implements MailboxChangeRepositoryContract {
-    MailboxChangeRepository mailboxChangeRepository;
-    State.Factory stateFactory;
-    AtomicInteger idCounter = new AtomicInteger(1000);
-
-    @BeforeEach
-    void setup() {
-        mailboxChangeRepository = new MemoryMailboxChangeRepository();
-        stateFactory = new State.DefaultFactory();
-    }
-
-    @Override
-    public MailboxChangeRepository mailboxChangeRepository() {
-        return mailboxChangeRepository;
-    }
-
-    @Override
-    public State.Factory stateFactory() {
-        return stateFactory;
-    }
-
-    @Override
-    public MailboxId generateNewMailboxId() {
-        return TestId.of(idCounter.incrementAndGet());
-    }
+    String TABLE_NAME = "mailbox_change";
+    String ACCOUNT_ID = "account_id";
+    String STATE = "state";
+    String DATE = "date";
+    String IS_DELEGATED = "is_delegated";
+    String IS_COUNT_CHANGE = "is_count_change";
+    String CREATED = "created";
+    String UPDATED = "updated";
+    String DESTROYED = "destroyed";
 }

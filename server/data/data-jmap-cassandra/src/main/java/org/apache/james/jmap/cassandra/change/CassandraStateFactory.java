@@ -17,40 +17,15 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory.change;
+package org.apache.james.jmap.cassandra.change;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.james.jmap.api.change.MailboxChangeRepository;
-import org.apache.james.jmap.api.change.MailboxChangeRepositoryContract;
 import org.apache.james.jmap.api.change.State;
-import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.TestId;
-import org.junit.jupiter.api.BeforeEach;
 
-public class MemoryMailboxChangeRepositoryTest implements MailboxChangeRepositoryContract {
-    MailboxChangeRepository mailboxChangeRepository;
-    State.Factory stateFactory;
-    AtomicInteger idCounter = new AtomicInteger(1000);
+import com.datastax.driver.core.utils.UUIDs;
 
-    @BeforeEach
-    void setup() {
-        mailboxChangeRepository = new MemoryMailboxChangeRepository();
-        stateFactory = new State.DefaultFactory();
-    }
-
+public class CassandraStateFactory implements State.Factory {
     @Override
-    public MailboxChangeRepository mailboxChangeRepository() {
-        return mailboxChangeRepository;
-    }
-
-    @Override
-    public State.Factory stateFactory() {
-        return stateFactory;
-    }
-
-    @Override
-    public MailboxId generateNewMailboxId() {
-        return TestId.of(idCounter.incrementAndGet());
+    public State generate() {
+        return State.of(UUIDs.timeBased());
     }
 }

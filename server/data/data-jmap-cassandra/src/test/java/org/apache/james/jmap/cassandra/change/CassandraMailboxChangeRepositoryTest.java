@@ -17,26 +17,41 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory.change;
+package org.apache.james.jmap.cassandra.change;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import org.apache.james.backends.cassandra.CassandraCluster;
+import org.apache.james.backends.cassandra.CassandraClusterExtension;
+import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.backends.cassandra.init.CassandraZonedDateTimeModule;
+import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.jmap.api.change.MailboxChangeRepository;
 import org.apache.james.jmap.api.change.MailboxChangeRepositoryContract;
 import org.apache.james.jmap.api.change.State;
+import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.TestId;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryMailboxChangeRepositoryTest implements MailboxChangeRepositoryContract {
+public class CassandraMailboxChangeRepositoryTest implements MailboxChangeRepositoryContract {
+
+    @RegisterExtension
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
+        CassandraModule.aggregateModules(CassandraMailboxChangeModule.MODULE,
+            CassandraSchemaVersionModule.MODULE,
+            CassandraZonedDateTimeModule.MODULE));
+
     MailboxChangeRepository mailboxChangeRepository;
-    State.Factory stateFactory;
-    AtomicInteger idCounter = new AtomicInteger(1000);
+    MailboxChangeRepositoryDAO mailboxChangeRepositoryDAO;
 
     @BeforeEach
-    void setup() {
-        mailboxChangeRepository = new MemoryMailboxChangeRepository();
-        stateFactory = new State.DefaultFactory();
+    public void setUp(CassandraCluster cassandra) {
+        mailboxChangeRepositoryDAO = new MailboxChangeRepositoryDAO(cassandra.getConf(), cassandra.getTypesProvider());
+        mailboxChangeRepository = new CassandraMailboxChangeRepository(mailboxChangeRepositoryDAO);
+    }
+
+    @Override
+    public State.Factory stateFactory() {
+        return new CassandraStateFactory();
     }
 
     @Override
@@ -45,12 +60,7 @@ public class MemoryMailboxChangeRepositoryTest implements MailboxChangeRepositor
     }
 
     @Override
-    public State.Factory stateFactory() {
-        return stateFactory;
-    }
-
-    @Override
     public MailboxId generateNewMailboxId() {
-        return TestId.of(idCounter.incrementAndGet());
+        return CassandraId.timeBased();
     }
 }
