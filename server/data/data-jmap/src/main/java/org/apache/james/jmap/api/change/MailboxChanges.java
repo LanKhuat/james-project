@@ -110,11 +110,7 @@ public class MailboxChanges {
                 return this;
             }
 
-            if (created.isEmpty() && updated.isEmpty() && destroyed.isEmpty()) {
-                isCountChangeOnly = change.isCountChange();
-            } else {
-                isCountChangeOnly = isCountChangeOnly && change.isCountChange();
-            }
+            isCountChangeOnly = calculateIsChangeOnly(change);
             state = change.getState();
             this.created.addAll(change.getCreated());
             this.updated.addAll(change.getUpdated());
@@ -125,6 +121,14 @@ public class MailboxChanges {
 
         public MailboxChanges build() {
             return new MailboxChanges(state, hasMoreChanges, isCountChangeOnly, created, updated, destroyed);
+        }
+
+        private boolean calculateIsChangeOnly(MailboxChange change) {
+            if (created.isEmpty() && updated.isEmpty() && destroyed.isEmpty()) {
+                return change.isCountChange();
+            } else {
+                return isCountChangeOnly && change.isCountChange();
+            }
         }
     }
 

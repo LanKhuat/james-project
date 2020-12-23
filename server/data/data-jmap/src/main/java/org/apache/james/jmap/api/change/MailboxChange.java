@@ -139,7 +139,7 @@ public class MailboxChange {
         private final State state;
         private final ZonedDateTime date;
         private boolean delegated;
-        private boolean isCountChange;
+        private final boolean isCountChange;
         private Optional<List<MailboxId>> created;
         private Optional<List<MailboxId>> updated;
         private Optional<List<MailboxId>> destroyed;
@@ -156,11 +156,6 @@ public class MailboxChange {
 
         public Builder delegated() {
             this.delegated = true;
-            return this;
-        }
-
-        public Builder isCountChange(boolean isCountChange) {
-            this.isCountChange = isCountChange;
             return this;
         }
 

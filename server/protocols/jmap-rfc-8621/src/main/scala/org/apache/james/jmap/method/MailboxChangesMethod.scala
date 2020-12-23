@@ -22,7 +22,7 @@ package org.apache.james.jmap.method
 import eu.timepit.refined.auto._
 import javax.inject.Inject
 import org.apache.james.jmap.api.change.MailboxChange.{State => JavaState}
-import org.apache.james.jmap.api.change.MailboxChangeRepository
+import org.apache.james.jmap.api.change.{MailboxChangeRepository, MailboxChanges}
 import org.apache.james.jmap.api.model.{AccountId => JavaAccountId}
 import org.apache.james.jmap.core.CapabilityIdentifier.{CapabilityIdentifier, JMAP_MAIL}
 import org.apache.james.jmap.core.Invocation.{Arguments, MethodName}
@@ -64,7 +64,7 @@ class MailboxChangesMethod @Inject()(mailboxSerializer: MailboxSerializer,
         oldState = request.sinceState,
         newState = State.fromMailboxChanges(mailboxChanges),
         hasMoreChanges = HasMoreChanges.fromMailboxChanges(mailboxChanges),
-        updatedProperties = if (mailboxChanges.isCountChangesOnly) Some(updatedProperties) else None,
+        updatedProperties = updateProperties(mailboxChanges),
         created = mailboxChanges.getCreated.asScala.toSet,
         updated = mailboxChanges.getUpdated.asScala.toSet,
         destroyed = mailboxChanges.getDestroyed.asScala.toSet))
@@ -79,5 +79,12 @@ class MailboxChangesMethod @Inject()(mailboxSerializer: MailboxSerializer,
     mailboxSerializer.deserializeMailboxChangesRequest(invocation.arguments.value) match {
       case JsSuccess(mailboxGetRequest, _) => Right(mailboxGetRequest)
       case errors: JsError => Left(new IllegalArgumentException(ResponseSerializer.serialize(errors).toString))
+    }
+
+  private def updateProperties(mailboxChanges: MailboxChanges): Option[Properties] =
+    if (mailboxChanges.isCountChangesOnly) {
+      Some(updatedProperties)
+    } else {
+      None
     }
 }
