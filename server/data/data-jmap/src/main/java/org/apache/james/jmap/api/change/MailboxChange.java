@@ -277,6 +277,7 @@ public class MailboxChange {
                         .accountId(AccountId.fromString(name))
                         .state(stateFactory.generate())
                         .date(now)
+                        .isCountChange(false)
                         .destroyed(ImmutableList.of(mailboxDeletion.getMailboxId()))
                         .delegated()
                         .build());
