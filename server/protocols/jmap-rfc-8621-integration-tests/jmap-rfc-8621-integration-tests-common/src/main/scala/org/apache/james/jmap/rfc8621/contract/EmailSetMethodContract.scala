@@ -25,13 +25,16 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 
 import io.netty.handler.codec.http.HttpHeaderNames.ACCEPT
-import io.restassured.RestAssured.{`given`, requestSpecification}
+import io.restassured.RestAssured.{`given`, requestSpecification, _}
 import io.restassured.builder.ResponseSpecBuilder
 import io.restassured.http.ContentType.JSON
 import javax.mail.Flags
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
+import net.javacrumbs.jsonunit.core.Option
+import net.javacrumbs.jsonunit.core.internal.Options
 import org.apache.http.HttpStatus.{SC_CREATED, SC_OK}
 import org.apache.james.GuiceJamesServer
+import org.apache.james.jmap.api.change.State
 import org.apache.james.jmap.core.ResponseObject.SESSION_STATE
 import org.apache.james.jmap.core.State.INSTANCE
 import org.apache.james.jmap.core.UTCDate
@@ -48,6 +51,7 @@ import org.apache.james.mime4j.dom.Message
 import org.apache.james.modules.{ACLProbeImpl, MailboxProbeImpl}
 import org.apache.james.utils.DataProbeImpl
 import org.assertj.core.api.Assertions.assertThat
+import org.hamcrest.Matchers.{equalTo, not}
 import org.junit.jupiter.api.{BeforeEach, Test}
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -3021,7 +3025,9 @@ trait EmailSetMethodContract {
            |}""".stripMargin)
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |  "sessionState": "${SESSION_STATE.value}",
@@ -3133,14 +3139,15 @@ trait EmailSetMethodContract {
       .get.asInstanceOf[JsNumber].value
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |  "sessionState": "${SESSION_STATE.value}",
            |  "methodResponses": [
            |    ["Email/set", {
            |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |      "newState": "${INSTANCE.value}",
+           |      "oldState": "${State.INITIAL.getValue}",
            |      "created": {
            |        "aaaaaa": {
            |          "id": "$messageId",
@@ -4648,14 +4655,15 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "destroyed": ["${messageId.serialize}"]
            |      }, "c1"],
            |      ["Email/get", {
@@ -4694,21 +4702,23 @@ trait EmailSetMethodContract {
       .body
       .asString
 
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |    "sessionState": "${SESSION_STATE.value}",
-         |    "methodResponses": [
-         |      ["Email/set", {
-         |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |        "newState": "${INSTANCE.value}",
-         |        "notDestroyed": {
-         |          "invalid": {
-         |            "type": "invalidArguments",
-         |            "description": "invalid is not a messageId: ${invalidMessageIdMessage("invalid")}"
-         |          }
-         |        }
-         |      }, "c1"]]
-         |}""".stripMargin)
+    assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
+      .isEqualTo(
+        s"""{
+           |    "sessionState": "${SESSION_STATE.value}",
+           |    "methodResponses": [
+           |      ["Email/set", {
+           |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |        "notDestroyed": {
+           |          "invalid": {
+           |            "type": "invalidArguments",
+           |            "description": "invalid is not a messageId: ${invalidMessageIdMessage("invalid")}"
+           |          }
+           |        }
+           |      }, "c1"]]
+           |}""".stripMargin)
   }
 
   @Test
@@ -4739,21 +4749,23 @@ trait EmailSetMethodContract {
       .body
       .asString
 
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |    "sessionState": "${SESSION_STATE.value}",
-         |    "methodResponses": [
-         |      ["Email/set", {
-         |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |        "newState": "${INSTANCE.value}",
-         |        "notDestroyed": {
-         |          "${messageId.serialize}": {
-         |            "type": "notFound",
-         |            "description": "Cannot find message with messageId: ${messageId.serialize}"
-         |          }
-         |        }
-         |      }, "c1"]]
-         |}""".stripMargin)
+    assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
+      .isEqualTo(
+        s"""{
+           |    "sessionState": "${SESSION_STATE.value}",
+           |    "methodResponses": [
+           |      ["Email/set", {
+           |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |        "notDestroyed": {
+           |          "${messageId.serialize}": {
+           |            "type": "notFound",
+           |            "description": "Cannot find message with messageId: ${messageId.serialize}"
+           |          }
+           |        }
+           |      }, "c1"]]
+           |}""".stripMargin)
   }
 
   @Test
@@ -4791,22 +4803,24 @@ trait EmailSetMethodContract {
       .body
       .asString
 
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |    "sessionState": "${SESSION_STATE.value}",
-         |    "methodResponses": [
-         |      ["Email/set", {
-         |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |        "newState": "${INSTANCE.value}",
-         |        "notDestroyed": {
-         |          "${messageId.serialize}": {
-         |            "type": "notFound",
-         |            "description": "Cannot find message with messageId: ${messageId.serialize}"
-         |          }
-         |        }
-         |      }, "c1"]
-         |    ]
-         |}""".stripMargin)
+    assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
+      .isEqualTo(
+        s"""{
+           |    "sessionState": "${SESSION_STATE.value}",
+           |    "methodResponses": [
+           |      ["Email/set", {
+           |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |        "notDestroyed": {
+           |          "${messageId.serialize}": {
+           |            "type": "notFound",
+           |            "description": "Cannot find message with messageId: ${messageId.serialize}"
+           |          }
+           |        }
+           |      }, "c1"]
+           |    ]
+           |}""".stripMargin)
   }
 
   @Test
@@ -4850,22 +4864,24 @@ trait EmailSetMethodContract {
       .body
       .asString
 
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |    "sessionState": "${SESSION_STATE.value}",
-         |    "methodResponses": [
-         |      ["Email/set", {
-         |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |        "newState": "${INSTANCE.value}",
-         |        "notDestroyed": {
-         |          "${messageId.serialize}": {
-         |            "type": "notFound",
-         |            "description": "Cannot find message with messageId: ${messageId.serialize}"
-         |          }
-         |        }
-         |      }, "c1"]
-         |    ]
-         |}""".stripMargin)
+    assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
+      .isEqualTo(
+        s"""{
+           |    "sessionState": "${SESSION_STATE.value}",
+           |    "methodResponses": [
+           |      ["Email/set", {
+           |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |        "notDestroyed": {
+           |          "${messageId.serialize}": {
+           |            "type": "notFound",
+           |            "description": "Cannot find message with messageId: ${messageId.serialize}"
+           |          }
+           |        }
+           |      }, "c1"]
+           |    ]
+           |}""".stripMargin)
   }
 
   @Test
@@ -4915,14 +4931,15 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "destroyed": ["${messageId.serialize}"]
            |      }, "c1"],
            |      ["Email/get", {
@@ -4986,14 +5003,15 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "destroyed": ["${messageId.serialize}"]
            |      }, "c1"],
            |      ["Email/get", {
@@ -5309,23 +5327,25 @@ trait EmailSetMethodContract {
       .body
       .asString
 
-    assertThatJson(response).isEqualTo(
-      s"""{
-         |    "sessionState": "${SESSION_STATE.value}",
-         |    "methodResponses": [
-         |      ["Email/set", {
-         |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-         |        "newState": "${INSTANCE.value}",
-         |        "destroyed": ["${messageId.serialize}"],
-         |        "notDestroyed": {
-         |          "invalid": {
-         |            "type": "invalidArguments",
-         |            "description": "invalid is not a messageId: ${invalidMessageIdMessage("invalid")}"
-         |          }
-         |        }
-         |      }, "c1"]
-         |    ]
-         |}""".stripMargin)
+    assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
+      .isEqualTo(
+        s"""{
+           |    "sessionState": "${SESSION_STATE.value}",
+           |    "methodResponses": [
+           |      ["Email/set", {
+           |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |        "destroyed": ["${messageId.serialize}"],
+           |        "notDestroyed": {
+           |          "invalid": {
+           |            "type": "invalidArguments",
+           |            "description": "invalid is not a messageId: ${invalidMessageIdMessage("invalid")}"
+           |          }
+           |        }
+           |      }, "c1"]
+           |    ]
+           |}""".stripMargin)
   }
 
   @Test
@@ -5379,7 +5399,9 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
@@ -5468,14 +5490,15 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "updated": {
            |          "${messageId1.serialize}": null,
            |          "${messageId2.serialize}": null
@@ -5548,13 +5571,14 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |        ["Email/set", {
            |          "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |          "newState": "${INSTANCE.value}",
            |          "notUpdated": {
            |            "${messageId.serialize}": {
            |              "type": "notFound",
@@ -5620,7 +5644,9 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
@@ -5705,13 +5731,14 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "notUpdated": {
            |          "${messageId.serialize}": {
            |            "type": "notFound",
@@ -5791,14 +5818,15 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "updated": {
            |          "${messageId.serialize}": null
            |        }
@@ -5874,14 +5902,15 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .whenIgnoringPaths("methodResponses[1][1].state")
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState",
+        "methodResponses[1][1].state")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "updated": {
            |          "${messageId.serialize}": null
            |        }
@@ -5951,13 +5980,14 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "updated": {
            |          "${messageId.serialize}": null
            |        }
@@ -6014,13 +6044,14 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "notUpdated": {
            |          "${messageId.serialize}": {
            |            "type": "invalidPatch",
@@ -6075,13 +6106,14 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "notUpdated": {
            |          "${messageId.serialize}": {
            |            "type": "invalidPatch",
@@ -6136,13 +6168,14 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "notUpdated": {
            |          "${messageId.serialize}": {
            |            "type": "invalidPatch",
@@ -6214,13 +6247,14 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
+      .whenIgnoringPaths("methodResponses[0][1].oldState",
+        "methodResponses[0][1].newState")
       .isEqualTo(
         s"""{
            |    "sessionState": "${SESSION_STATE.value}",
            |    "methodResponses": [
            |      ["Email/set", {
            |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-           |        "newState": "${INSTANCE.value}",
            |        "updated": {
            |          "${messageId1.serialize}": null
            |        },
@@ -6233,6 +6267,249 @@ trait EmailSetMethodContract {
            |      }, "c1"]
            |    ]
            |}""".stripMargin)
+  }
+
+  @Test
+  def newStateShouldBeUpToDate(server: GuiceJamesServer): Unit = {
+    val mailboxProbe = server.getProbe(classOf[MailboxProbeImpl])
+    val mailboxId: MailboxId = mailboxProbe.createMailbox(MailboxPath.forUser(BOB, "mailbox"))
+
+    val request =
+      s"""
+         |{
+         |   "using": [
+         |     "urn:ietf:params:jmap:core",
+         |     "urn:ietf:params:jmap:mail"],
+         |   "methodCalls": [
+         |       ["Email/set", {
+         |         "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |         "create": {
+         |           "aaaaaa": {
+         |             "mailboxIds": {
+         |               "${mailboxId.serialize()}": true
+         |             }
+         |           }
+         |         }
+         |       }, "c1"],
+         |       ["Email/changes", {
+         |         "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |         "#sinceState": {
+         |           "resultOf":"c1",
+         |           "name":"Email/set",
+         |           "path":"newState"
+         |         }
+         |       }, "c2"]
+         |   ]
+         |}
+         |""".stripMargin
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .log().ifValidationFails()
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response)
+      .withOptions(new Options(Option.IGNORING_ARRAY_ORDER))
+      .whenIgnoringPaths("methodResponses[1][1].oldState",
+        "methodResponses[1][1].newState")
+      .inPath("methodResponses[1][1]")
+      .isEqualTo(
+        s"""{
+           |  "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |  "hasMoreChanges": false,
+           |  "created": [],
+           |  "updated": [],
+           |  "destroyed": []
+           |}""".stripMargin)
+  }
+
+  @Test
+  def oldStateShouldIncludeSetChanges(server: GuiceJamesServer): Unit = {
+    val path: MailboxPath = MailboxPath.forUser(BOB, "mailbox")
+    server.getProbe(classOf[MailboxProbeImpl]).createMailbox(path)
+
+    val message: Message = Fixture.createTestMessage
+    val messageId: MessageId = server.getProbe(classOf[MailboxProbeImpl])
+      .appendMessage(BOB.asString(), path,
+        AppendCommand.builder()
+          .build(message))
+      .getMessageId
+
+    val request =
+      s"""
+         |{
+         |   "using": [
+         |     "urn:ietf:params:jmap:core",
+         |     "urn:ietf:params:jmap:mail"],
+         |   "methodCalls": [
+         |       ["Email/set", {
+         |         "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |         "update": {
+         |           "${messageId.serialize}": {
+         |             "keywords": {
+         |               "music": true
+         |             }
+         |           }
+         |         }
+         |       }, "c1"],
+         |       ["Email/changes", {
+         |         "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |         "#sinceState": {
+         |            "resultOf":"c1",
+         |            "name":"Email/set",
+         |            "path":"oldState"
+         |          }
+         |       }, "c2"]
+         |   ]
+         |}
+         |""".stripMargin
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .log().ifValidationFails()
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    assertThatJson(response)
+      .withOptions(new Options(Option.IGNORING_ARRAY_ORDER))
+      .whenIgnoringPaths("methodResponses[1][1].oldState", "methodResponses[1][1].newState")
+      .inPath("methodResponses[1][1]")
+      .isEqualTo(
+        s"""{
+           |  "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |  "hasMoreChanges": false,
+           |  "created": [],
+           |  "updated": ["${messageId.serialize}"],
+           |  "destroyed": []
+           |}""".stripMargin)
+  }
+
+  @Test
+  def stateShouldNotTakeIntoAccountDelegationWhenNoCapability(server: GuiceJamesServer): Unit = {
+    val state: String = `with`()
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(
+        s"""{
+           |  "using": [
+           |    "urn:ietf:params:jmap:core",
+           |    "urn:ietf:params:jmap:mail"],
+           |  "methodCalls": [
+           |    ["Email/get", {
+           |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |      "ids": []
+           |    }, "c1"]
+           |  ]
+           |}""".stripMargin)
+      .post
+      .`then`()
+      .extract()
+      .jsonPath()
+      .get("methodResponses[0][1].state")
+
+    val sharedMailboxName = "AndreShared"
+    val andreMailboxPath = MailboxPath.forUser(ANDRE, sharedMailboxName)
+    server.getProbe(classOf[MailboxProbeImpl])
+      .createMailbox(andreMailboxPath)
+
+    server.getProbe(classOf[ACLProbeImpl])
+      .replaceRights(andreMailboxPath, BOB.asString, new MailboxACL.Rfc4314Rights(Right.Lookup))
+
+    val message: Message = Fixture.createTestMessage
+    server.getProbe(classOf[MailboxProbeImpl])
+      .appendMessage(ANDRE.asString(), andreMailboxPath,
+        AppendCommand.builder()
+          .build(message))
+      .getMessageId
+
+    `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(s"""{
+               |  "using": [
+               |    "urn:ietf:params:jmap:core",
+               |    "urn:ietf:params:jmap:mail"],
+               |  "methodCalls": [
+               |    ["Email/set", {
+               |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6"
+               |    }, "c1"]
+               |  ]
+               |}""".stripMargin)
+    .when
+      .post
+    .`then`
+      .statusCode(SC_OK)
+      .body("methodResponses[0][1].oldState", equalTo(state))
+  }
+
+  @Test
+  def stateShouldTakeIntoAccountDelegationWhenCapability(server: GuiceJamesServer): Unit = {
+    val state: String = `with`()
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(
+        s"""{
+           |  "using": [
+           |  "urn:ietf:params:jmap:core",
+           |  "urn:ietf:params:jmap:mail"],
+           |  "methodCalls": [
+           |    ["Email/get", {
+           |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |      "ids":[]
+           |    }, "c1"]
+           |  ]
+           |}""".stripMargin)
+      .post
+      .`then`()
+      .extract()
+      .jsonPath()
+      .get("methodResponses[0][1].state")
+
+    val sharedMailboxName = "AndreShared"
+    val andreMailboxPath = MailboxPath.forUser(ANDRE, sharedMailboxName)
+    server.getProbe(classOf[MailboxProbeImpl])
+      .createMailbox(andreMailboxPath)
+
+    server.getProbe(classOf[ACLProbeImpl])
+      .replaceRights(andreMailboxPath, BOB.asString, new MailboxACL.Rfc4314Rights(Right.Lookup))
+
+    val message: Message = Fixture.createTestMessage
+    server.getProbe(classOf[MailboxProbeImpl])
+      .appendMessage(ANDRE.asString(), andreMailboxPath,
+        AppendCommand.builder()
+          .build(message))
+      .getMessageId
+
+    `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(s"""{
+               |  "using": [
+               |    "urn:ietf:params:jmap:core",
+               |    "urn:ietf:params:jmap:mail",
+               |    "urn:apache:james:params:jmap:mail:shares"],
+               |  "methodCalls": [
+               |    ["Email/set", {
+               |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6"
+               |    }, "c1"]
+               |  ]
+               |}""".stripMargin)
+    .when
+      .post
+    .`then`
+      .statusCode(SC_OK)
+      .body("methodResponses[0][1].oldState", not(equalTo(state)))
   }
 
   private def buildTestMessage = {
