@@ -17,23 +17,36 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory.change;
+package org.apache.james.jmap.cassandra.change;
 
-import java.util.concurrent.ThreadLocalRandom;
-
+import org.apache.james.backends.cassandra.CassandraCluster;
+import org.apache.james.backends.cassandra.CassandraClusterExtension;
+import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.backends.cassandra.init.CassandraZonedDateTimeModule;
+import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.jmap.api.change.EmailChangeRepository;
 import org.apache.james.jmap.api.change.EmailChangeRepositoryContract;
 import org.apache.james.jmap.api.change.State;
+import org.apache.james.mailbox.cassandra.ids.CassandraMessageId;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.model.TestMessageId;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryEmailChangeRepositoryTest implements EmailChangeRepositoryContract {
+public class CassandraEmailChangeRepositoryTest implements EmailChangeRepositoryContract {
+
+    @RegisterExtension
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
+        CassandraModule.aggregateModules(CassandraEmailChangeModule.MODULE,
+            CassandraSchemaVersionModule.MODULE,
+            CassandraZonedDateTimeModule.MODULE));
+
     EmailChangeRepository emailChangeRepository;
+    EmailChangeRepositoryDAO emailChangeRepositoryDAO;
 
     @BeforeEach
-    void setup() {
-        emailChangeRepository = new MemoryEmailChangeRepository();
+    public void setUp(CassandraCluster cassandra) {
+        emailChangeRepositoryDAO = new EmailChangeRepositoryDAO(cassandra.getConf(), cassandra.getTypesProvider());
+        emailChangeRepository = new CassandraEmailChangeRepository(emailChangeRepositoryDAO);
     }
 
     @Override
@@ -43,11 +56,11 @@ public class MemoryEmailChangeRepositoryTest implements EmailChangeRepositoryCon
 
     @Override
     public State generateNewState() {
-        return State.Factory.DEFAULT.generate();
+        return new CassandraStateFactory().generate();
     }
 
     @Override
     public MessageId generateNewMessageId() {
-        return TestMessageId.of(ThreadLocalRandom.current().nextLong());
+        return new CassandraMessageId.Factory().generate();
     }
 }

@@ -17,37 +17,15 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.memory.change;
+package org.apache.james.jmap.cassandra.change.tables;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-import org.apache.james.jmap.api.change.EmailChangeRepository;
-import org.apache.james.jmap.api.change.EmailChangeRepositoryContract;
-import org.apache.james.jmap.api.change.State;
-import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.model.TestMessageId;
-import org.junit.jupiter.api.BeforeEach;
-
-public class MemoryEmailChangeRepositoryTest implements EmailChangeRepositoryContract {
-    EmailChangeRepository emailChangeRepository;
-
-    @BeforeEach
-    void setup() {
-        emailChangeRepository = new MemoryEmailChangeRepository();
-    }
-
-    @Override
-    public EmailChangeRepository emailChangeRepository() {
-        return emailChangeRepository;
-    }
-
-    @Override
-    public State generateNewState() {
-        return State.Factory.DEFAULT.generate();
-    }
-
-    @Override
-    public MessageId generateNewMessageId() {
-        return TestMessageId.of(ThreadLocalRandom.current().nextLong());
-    }
+public interface CassandraEmailChangeTable {
+    String TABLE_NAME = "email_change";
+    String ACCOUNT_ID = "account_id";
+    String STATE = "state";
+    String DATE = "date";
+    String IS_DELEGATED = "is_delegated";
+    String CREATED = "created";
+    String UPDATED = "updated";
+    String DESTROYED = "destroyed";
 }
