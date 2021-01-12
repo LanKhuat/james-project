@@ -6472,7 +6472,7 @@ trait EmailSetMethodContract {
            |  ]
            |}""".stripMargin)
       .post
-      .`then`()
+    .`then`()
       .extract()
       .jsonPath()
       .get("methodResponses[0][1].state")
