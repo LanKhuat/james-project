@@ -419,7 +419,16 @@ trait EmailSetMethodContract {
          |          "mailboxIds": {
          |             "${mailboxId.serialize}": true
          |          },
-         |          "headers": "invalid"
+         |          "headers": [
+         |            {
+         |              "name": "Content-Type",
+         |              "value": " text/plain; charset=utf-8; format=flowed"
+         |            },
+         |            {
+         |              "name": "Content-Transfer-Encoding",
+         |              "value": " 7bit"
+         |            }
+         |          ]
          |        }
          |      }
          |    }, "c1"]]
