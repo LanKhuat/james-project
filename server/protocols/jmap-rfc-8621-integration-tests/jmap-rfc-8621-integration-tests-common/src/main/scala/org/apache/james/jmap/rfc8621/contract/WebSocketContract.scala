@@ -23,7 +23,9 @@ import java.nio.charset.StandardCharsets
 
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
 import org.apache.james.GuiceJamesServer
+import org.apache.james.jmap.api.change.State
 import org.apache.james.jmap.api.model.AccountId
+import org.apache.james.jmap.core.PushState
 import org.apache.james.jmap.draft.JmapGuiceProbe
 import org.apache.james.jmap.rfc8621.contract.Fixture._
 import org.apache.james.mailbox.MessageManager.AppendCommand
@@ -1066,6 +1068,48 @@ trait WebSocketContract {
       })
       .send(backend)
       .body
+  }
+
+  @Test
+  @Timeout(180)
+  def pushEnableRequestWithPushStateShouldReturnServerState(server: GuiceJamesServer): Unit = {
+    val bobPath = MailboxPath.inbox(BOB)
+    val accountId: AccountId = AccountId.fromUsername(BOB)
+    val mailboxId = server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobPath)
+
+    Thread.sleep(100)
+
+    val response: Either[String, String] =
+      authenticatedRequest(server)
+        .response(asWebSocket[Identity, String] {
+          ws =>
+            ws.send(WebSocketFrame.text(
+              """{
+                |  "@type": "WebSocketPushEnable",
+                |  "dataTypes": ["Mailbox", "Email"],
+                |  "pushState": "aaa"
+                |}""".stripMargin))
+
+            Thread.sleep(100)
+
+            ws.receive()
+              .map { case t: Text =>
+                t.payload
+              }
+        })
+        .send(backend)
+        .body
+
+    Thread.sleep(100)
+
+    val jmapGuiceProbe: JmapGuiceProbe = server.getProbe(classOf[JmapGuiceProbe])
+    val emailState: State = jmapGuiceProbe.getLatestEmailState(accountId)
+    val mailboxState: State = jmapGuiceProbe.getLatestMailboxState(accountId)
+    val globalState: PushState = PushState.from(mailboxState, emailState)
+    val pushEnableResponse: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"${mailboxState.getValue}","Email":"${emailState.getValue}"}},"pushState":"${globalState.value}"}"""
+
+    assertThat(response.toOption.get)
+      .isEqualTo(pushEnableResponse)
   }
 
   private def authenticatedRequest(server: GuiceJamesServer): RequestT[Identity, Either[String, String], Any] = {

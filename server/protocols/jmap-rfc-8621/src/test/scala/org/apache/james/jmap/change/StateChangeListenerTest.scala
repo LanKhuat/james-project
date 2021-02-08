@@ -51,7 +51,7 @@ class StateChangeListenerTest {
     assertThat(sink.asFlux().collectList().block())
       .containsExactly(StateChange(Map(AccountId.from(Username.of("bob")).toOption.get  -> TypeState(Map(
         MailboxTypeName -> mailboxState,
-        EmailTypeName -> emailState)))))
+        EmailTypeName -> emailState))), None))
   }
 
   @Test
@@ -70,7 +70,7 @@ class StateChangeListenerTest {
 
     assertThat(sink.asFlux().collectList().block())
       .containsExactly(StateChange(Map(AccountId.from(Username.of("bob")).toOption.get -> TypeState(Map(
-        MailboxTypeName -> mailboxState)))))
+        MailboxTypeName -> mailboxState))), None))
   }
 
   @Test

@@ -91,7 +91,8 @@ case class StateChangeEvent(eventId: EventId,
         VacationResponseTypeName.asMap(vacationResponseState) ++
           MailboxTypeName.asMap(mailboxState) ++
           EmailDeliveryTypeName.asMap(emailDeliveryState) ++
-          EmailTypeName.asMap(emailState))))
+          EmailTypeName.asMap(emailState))),
+      None)
 
   override val getUsername: Username = username
 
