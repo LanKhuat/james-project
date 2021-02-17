@@ -41,7 +41,16 @@ case class WebSocketResponse(requestId: Option[RequestId], responseObject: Respo
 case class WebSocketError(requestId: Option[RequestId], problemDetails: ProblemDetails) extends OutboundMessage
 
 object PushState {
-  def from(states: State*): PushState = PushState(Hashing.sha256().hashString(states.map(_.getValue).mkString("_"), StandardCharsets.UTF_8).toString)
+  def from(mailboxState: State, emailState: State): PushState =
+    PushState(hashStates(List(mailboxState, emailState)))
+
+  def fromOption(mailboxState: Option[State], emailState: Option[State]): Option[PushState] =
+    List(mailboxState, emailState).flatten match {
+      case Nil => None
+      case states => Some(PushState(hashStates(states)))
+    }
+
+  private def hashStates(states: List[State]): String = Hashing.sha256().hashString(states.mkString("_"), StandardCharsets.UTF_8).toString
 }
 
 case class PushState(value: String)

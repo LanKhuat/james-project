@@ -506,11 +506,13 @@ trait WebSocketContract {
     Thread.sleep(100)
 
     val jmapGuiceProbe: JmapGuiceProbe = server.getProbe(classOf[JmapGuiceProbe])
-    val emailState: String = jmapGuiceProbe.getLatestEmailState(accountId).getValue.toString
-    val mailboxState: String = jmapGuiceProbe.getLatestMailboxState(accountId).getValue.toString
+    val emailState: State = jmapGuiceProbe.getLatestEmailState(accountId)
+    val mailboxState: State = jmapGuiceProbe.getLatestMailboxState(accountId)
 
-    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"$mailboxState"}}}"""
-    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Email":"$emailState"}}}"""
+    val globalState1: String = PushState.fromOption(Some(mailboxState), None).get.value
+    val globalState2: String = PushState.fromOption(None, Some(emailState)).get.value
+    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"${mailboxState.getValue}"}},"pushState":"$globalState1"}"""
+    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Email":"${emailState.getValue}"}},"pushState":"$globalState2"}"""
 
     assertThat(response.toOption.get.asJava)
       .hasSize(3) // email notification + mailbox notification + API response
@@ -632,11 +634,13 @@ trait WebSocketContract {
     Thread.sleep(100)
 
     val jmapGuiceProbe: JmapGuiceProbe = server.getProbe(classOf[JmapGuiceProbe])
-    val emailState: String = jmapGuiceProbe.getLatestEmailState(accountId).getValue.toString
-    val mailboxState: String = jmapGuiceProbe.getLatestMailboxState(accountId).getValue.toString
+    val mailboxState: State = jmapGuiceProbe.getLatestMailboxState(accountId)
+    val emailState: State = jmapGuiceProbe.getLatestEmailState(accountId)
 
-    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"$mailboxState"}}}"""
-    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"EmailDelivery":"$emailState","Email":"$emailState"}}}"""
+    val globalState1: String = PushState.fromOption(Some(mailboxState), None).get.value
+    val globalState2: String = PushState.fromOption(None, Some(emailState)).get.value
+    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"${mailboxState.getValue}"}},"pushState":"$globalState1"}"""
+    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"EmailDelivery":"${emailState.getValue}","Email":"${emailState.getValue}"}},"pushState":"$globalState2"}"""
 
     assertThat(response.toOption.get.asJava)
       .hasSize(3) // email notification + mailbox notification + API response
@@ -648,7 +652,6 @@ trait WebSocketContract {
   // For client compatibility purposes
   def emailDeliveryShouldNotIncludeFlagUpdatesAndDeletes(server: GuiceJamesServer): Unit = {
     val bobPath = MailboxPath.inbox(BOB)
-    val accountId: AccountId = AccountId.fromUsername(BOB)
     val mailboxId = server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobPath)
 
     Thread.sleep(100)
@@ -826,11 +829,13 @@ trait WebSocketContract {
     Thread.sleep(100)
 
     val jmapGuiceProbe: JmapGuiceProbe = server.getProbe(classOf[JmapGuiceProbe])
-    val emailState: String = jmapGuiceProbe.getLatestEmailState(accountId).getValue.toString
-    val mailboxState: String = jmapGuiceProbe.getLatestMailboxState(accountId).getValue.toString
+    val emailState: State = jmapGuiceProbe.getLatestEmailState(accountId)
+    val mailboxState: State = jmapGuiceProbe.getLatestMailboxState(accountId)
 
-    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"$mailboxState"}}}"""
-    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"EmailDelivery":"$emailState","Email":"$emailState"}}}"""
+    val globalState1: String = PushState.fromOption(Some(mailboxState), None).get.value
+    val globalState2: String = PushState.fromOption(None, Some(emailState)).get.value
+    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"${mailboxState.getValue}"}},"pushState":"$globalState1"}"""
+    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"EmailDelivery":"${emailState.getValue}","Email":"${emailState.getValue}"}},"pushState":"$globalState2"}"""
 
     assertThat(response.toOption.get.asJava)
       .hasSize(3) // email notification + mailbox notification + API response
@@ -897,11 +902,13 @@ trait WebSocketContract {
 
     Thread.sleep(100)
     val jmapGuiceProbe: JmapGuiceProbe = server.getProbe(classOf[JmapGuiceProbe])
-    val emailState: String = jmapGuiceProbe.getLatestEmailState(accountId).getValue.toString
-    val mailboxState: String = jmapGuiceProbe.getLatestMailboxState(accountId).getValue.toString
+    val emailState: State = jmapGuiceProbe.getLatestEmailState(accountId)
+    val mailboxState: State = jmapGuiceProbe.getLatestMailboxState(accountId)
 
-    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"$mailboxState"}}}"""
-    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Email":"$emailState"}}}"""
+    val globalState1: String = PushState.fromOption(Some(mailboxState), None).get.value
+    val globalState2: String = PushState.fromOption(None, Some(emailState)).get.value
+    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"${mailboxState.getValue}"}},"pushState":"$globalState1"}"""
+    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Email":"${emailState.getValue}"}},"pushState":"$globalState2"}"""
 
     assertThat(response.toOption.get.asJava)
       .hasSize(2) // No Email notification
@@ -959,11 +966,13 @@ trait WebSocketContract {
 
     val jmapGuiceProbe: JmapGuiceProbe = server.getProbe(classOf[JmapGuiceProbe])
     val accountId: AccountId = AccountId.fromUsername(BOB)
-    val emailState: String = jmapGuiceProbe.getLatestEmailStateWithDelegation(accountId).getValue.toString
-    val mailboxState: String = jmapGuiceProbe.getLatestMailboxStateWithDelegation(accountId).getValue.toString
+    val emailState: State = jmapGuiceProbe.getLatestEmailStateWithDelegation(accountId)
+    val mailboxState: State = jmapGuiceProbe.getLatestMailboxStateWithDelegation(accountId)
 
-    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"$mailboxState"}}}"""
-    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Email":"$emailState"}}}"""
+    val globalState1: String = PushState.fromOption(Some(mailboxState), None).get.value
+    val globalState2: String = PushState.fromOption(None, Some(emailState)).get.value
+    val mailboxStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Mailbox":"${mailboxState.getValue}"}},"pushState":"$globalState1"}"""
+    val emailStateChange: String = s"""{"@type":"StateChange","changed":{"$ACCOUNT_ID":{"Email":"${emailState.getValue}"}},"pushState":"$globalState2"}"""
 
     assertThat(response.toOption.get.asJava)
       .hasSize(2) // email notification + mailbox notification
