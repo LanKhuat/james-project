@@ -19,89 +19,137 @@
 
 package org.apache.james.jmap.mailet;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.james.mailbox.MailboxManager;
+import org.apache.james.mdn.MDN;
+import org.apache.james.mdn.MDN.MDNParseContentTypeException;
+import org.apache.james.mdn.MDN.MDNParseException;
+import org.apache.james.mdn.MDN.MDNParseBodyPartInvalidException;
+import org.apache.james.mdn.MDNReport;
+import org.apache.james.mdn.action.mode.DispositionActionMode;
+import org.apache.james.mdn.fields.*;
+import org.apache.james.mdn.modifier.DispositionModifier;
+import org.apache.james.mdn.sending.mode.DispositionSendingMode;
+import org.apache.james.mdn.type.DispositionType;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.message.BodyPart;
 import org.apache.james.mime4j.message.BodyPartBuilder;
 import org.apache.james.mime4j.message.MultipartBuilder;
 import org.apache.james.mime4j.message.SingleBodyBuilder;
-import org.apache.james.user.api.UsersRepository;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.nio.charset.StandardCharsets;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ExtractMDNOriginalJMAPMessageIdTest {
 
     @Test
-    public void extractReportShouldRejectNonMultipartMessage() throws IOException {
-        ExtractMDNOriginalJMAPMessageId testee = new ExtractMDNOriginalJMAPMessageId(mock(MailboxManager.class), mock(UsersRepository.class));
-
+    public void extractReportShouldRejectNonMultipartMessage() throws Exception {
         Message message = Message.Builder.of()
-            .setBody("content", StandardCharsets.UTF_8)
-            .build();
+                .setBody("content", StandardCharsets.UTF_8)
+                .build();
+        assertThatThrownBy(() -> MDN.parse(message))
+                .isInstanceOf(MDNParseContentTypeException.class)
+                .hasMessage("MDN Message must be multipart");
 
-        assertThat(testee.extractReport(message)).isEmpty();
     }
 
     @Test
     public void extractReportShouldRejectMultipartWithSinglePart() throws Exception {
-        ExtractMDNOriginalJMAPMessageId testee = new ExtractMDNOriginalJMAPMessageId(mock(MailboxManager.class), mock(UsersRepository.class));
-
         Message message = Message.Builder.of()
-            .setBody(
-                MultipartBuilder.create()
-                    .setSubType("report")
-                    .addTextPart("content", StandardCharsets.UTF_8)
-                    .build())
-            .build();
-
-        assertThat(testee.extractReport(message)).isEmpty();
+                .setBody(
+                        MultipartBuilder.create()
+                                .setSubType("report")
+                                .addTextPart("content", StandardCharsets.UTF_8)
+                                .build())
+                .build();
+        assertThatThrownBy(() -> MDN.parse(message))
+                .isInstanceOf(MDNParseBodyPartInvalidException.class)
+                .hasMessage("MDN Message must contain at least two parts");
     }
 
     @Test
-    public void extractReportShouldRejectSecondPartWithBadContentType() throws IOException {
-        ExtractMDNOriginalJMAPMessageId testee = new ExtractMDNOriginalJMAPMessageId(mock(MailboxManager.class), mock(UsersRepository.class));
-
+    public void extractReportShouldRejectSecondPartWithBadContentType() throws Exception {
         Message message = Message.Builder.of()
-            .setBody(MultipartBuilder.create()
-                .setSubType("report")
-                .addTextPart("first", StandardCharsets.UTF_8)
-                .addTextPart("second", StandardCharsets.UTF_8)
-                .build())
-            .build();
-
-        assertThat(testee.extractReport(message)).isEmpty();
+                .setBody(MultipartBuilder.create()
+                        .setSubType("report")
+                        .addTextPart("first", StandardCharsets.UTF_8)
+                        .addTextPart("second", StandardCharsets.UTF_8)
+                        .build())
+                .build();
+        assertThatThrownBy(() -> MDN.parse(message))
+                .isInstanceOf(MDNParseException.class)
+                .hasMessage("MDN can not extract");
     }
 
     @Test
-    public void extractReportShouldExtractMDNWhenValidMDN() throws IOException {
-        ExtractMDNOriginalJMAPMessageId testee = new ExtractMDNOriginalJMAPMessageId(mock(MailboxManager.class), mock(UsersRepository.class));
-
-        BodyPart mdn = BodyPartBuilder
-            .create()
-            .setBody(SingleBodyBuilder.create()
-                .setText(
-                    "Reporting-UA: linagora.com; Evolution 3.26.5-1+b1 \n" +
-                        "Final-Recipient: rfc822; homer@linagora.com\n" +
-                        "Original-Message-ID: <1521557867.2614.0.camel@apache.org>\n" +
-                        "Disposition: manual-action/MDN-sent-manually;displayed\n")
-                .buildText())
-            .setContentType("message/disposition-notification")
-            .build();
+    public void extractReportShouldExtractMDNWhenValidMDN() throws Exception {
+        BodyPart mdnBodyPart = BodyPartBuilder
+                .create()
+                .setBody(SingleBodyBuilder.create()
+                        .setText(
+                                "Reporting-UA: UA_name; UA_product\r\n" +
+                                        "MDN-Gateway: rfc822; apache.org\r\n" +
+                                        "Original-Recipient: rfc822; originalRecipient\r\n" +
+                                        "Final-Recipient: rfc822; final_recipient\r\n" +
+                                        "Original-Message-ID: <original@message.id>\r\n" +
+                                        "Disposition: automatic-action/MDN-sent-automatically;processed/error,failed\r\n" +
+                                        "Error: Message1\r\n" +
+                                        "Error: Message2\r\n" +
+                                        "X-OPENPAAS-IP: 177.177.177.77\r\n" +
+                                        "X-OPENPAAS-PORT: 8000\r\n" +
+                                        ""
+                                                .replace(System.lineSeparator(), "\r\n").strip()
+                        )
+                        .buildText())
+                .setContentType("message/disposition-notification")
+                .build();
 
         Message message = Message.Builder.of()
-            .setBody(MultipartBuilder.create("report")
-                .addTextPart("first", StandardCharsets.UTF_8)
-                .addBodyPart(mdn)
-                .build())
-            .build();
+                .setBody(MultipartBuilder.create("report")
+                        .addTextPart("first", StandardCharsets.UTF_8)
+                        .addBodyPart(mdnBodyPart)
+                        .build())
+                .build();
+        var mdnActual = MDN.parse(message);
+        var mdnReportExpect = MDNReport.builder()
+                .reportingUserAgentField(ReportingUserAgent.builder()
+                        .userAgentName("UA_name")
+                        .userAgentProduct("UA_product")
+                        .build())
+                .gatewayField(Gateway.builder()
+                        .nameType(AddressType.RFC_822)
+                        .name(Text.fromRawText("apache.org"))
+                        .build())
+                .originalRecipientField(OriginalRecipient.builder()
+                        .originalRecipient(Text.fromRawText("originalRecipient"))
+                        .addressType(AddressType.RFC_822)
+                        .build())
+                .finalRecipientField(FinalRecipient.builder()
+                        .finalRecipient(Text.fromRawText("final_recipient"))
+                        .addressType(AddressType.RFC_822)
+                        .build())
+                .originalMessageIdField("<original@message.id>")
+                .dispositionField(Disposition.builder()
+                        .actionMode(DispositionActionMode.Automatic)
+                        .sendingMode(DispositionSendingMode.Automatic)
+                        .type(DispositionType.Processed)
+                        .addModifier(DispositionModifier.Error)
+                        .addModifier(DispositionModifier.Failed)
+                        .build())
+                .addErrorField("Message1")
+                .addErrorField("Message2")
+                .withExtensionField(ExtensionField.builder()
+                        .fieldName("X-OPENPAAS-IP")
+                        .rawValue(" 177.177.177.77")
+                        .build())
+                .withExtensionField(ExtensionField.builder()
+                        .fieldName("X-OPENPAAS-PORT")
+                        .rawValue(" 8000")
+                        .build())
+                .build();
 
-        assertThat(testee.extractReport(message))
-            .isNotEmpty()
-            .contains(mdn);
+        Assert.assertEquals(mdnActual.getReport(), mdnReportExpect);
+        Assert.assertEquals(mdnActual.getHumanReadableText(), "first");
     }
 }

@@ -20,8 +20,11 @@
 package org.apache.james.mdn;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.mail.BodyPart;
@@ -31,16 +34,22 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.james.javax.MimeMultipartReport;
 import org.apache.james.mime4j.Charsets;
+import org.apache.james.mime4j.dom.Entity;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.dom.Multipart;
+import org.apache.james.mime4j.dom.SingleBody;
 import org.apache.james.mime4j.message.BasicBodyFactory;
 import org.apache.james.mime4j.message.BodyPartBuilder;
 import org.apache.james.mime4j.message.MultipartBuilder;
 import org.apache.james.mime4j.stream.NameValuePair;
 
 import com.google.common.base.Preconditions;
+
+import scala.util.Try;
+
 
 public class MDN {
     private static final NameValuePair UTF_8_CHARSET = new NameValuePair("charset", Charsets.UTF_8.name());
@@ -74,8 +83,81 @@ public class MDN {
         }
     }
 
+    public static class MDNParseException extends Exception {
+        public MDNParseException(String message) {
+            super(message);
+        }
+
+        public MDNParseException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public static class MDNParseContentTypeException extends MDNParseException {
+        public MDNParseContentTypeException(String message) {
+            super(message);
+        }
+    }
+
+    public static class MDNParseBodyPartInvalidException extends MDNParseException {
+
+        public MDNParseBodyPartInvalidException(String message) {
+            super(message);
+        }
+    }
+
+
     public static Builder builder() {
         return new Builder();
+    }
+
+    public static MDN parse(Message message) throws MDNParseException {
+        if (!message.isMultipart()) {
+            throw new MDNParseContentTypeException("MDN Message must be multipart");
+        }
+        List<Entity> bodyParts = ((Multipart) message.getBody()).getBodyParts();
+        if (bodyParts.size() < 2) {
+            throw new MDNParseBodyPartInvalidException("MDN Message must contain at least two parts");
+        }
+        try {
+            var humanReadableTextEntity = bodyParts.get(0);
+            return extractHumanReadableText(humanReadableTextEntity)
+                    .flatMap(humanReadableText1 -> extractMDNReport(bodyParts.get(1))
+                            .map(report1 -> MDN.builder()
+                                    .humanReadableText(humanReadableText1)
+                                    .report(report1)
+                                    .build()))
+                    .orElseThrow(() -> new MDNParseException("MDN can not extract"));
+        } catch (MDNParseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MDNParseException(e.getMessage(), e);
+        }
+    }
+
+    public static Optional<String> extractHumanReadableText(Entity humanReadableTextEntity) throws IOException {
+        if (humanReadableTextEntity.getMimeType().equals("text/plain")) {
+            try (InputStream inputStream = ((SingleBody) humanReadableTextEntity.getBody()).getInputStream()) {
+                return Optional.of(IOUtils.toString(inputStream, humanReadableTextEntity.getCharset()));
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<MDNReport> extractMDNReport(Entity reportEntity) {
+        if (!reportEntity.getMimeType().startsWith(DISPOSITION_CONTENT_TYPE)) {
+            return Optional.empty();
+        }
+        try (InputStream inputStream = ((SingleBody) reportEntity.getBody()).getInputStream()) {
+            Try<MDNReport> result = MDNReportParser.parse(inputStream, reportEntity.getCharset());
+            if (result.isSuccess()) {
+                return Optional.of(result.get());
+            } else {
+                return Optional.empty();
+            }
+        } catch (IOException e) {
+            return Optional.empty();
+        }
     }
 
     private final String humanReadableText;
@@ -138,13 +220,13 @@ public class MDN {
         MultipartBuilder builder = MultipartBuilder.create(REPORT_SUB_TYPE);
         builder.addContentTypeParameter(new NameValuePair("report-type", DISPOSITION_NOTIFICATION_REPORT_TYPE));
         builder.addBodyPart(BodyPartBuilder.create()
-            .use(new BasicBodyFactory())
-            .setBody(humanReadableText, Charsets.UTF_8)
-            .setContentType("text/plain", UTF_8_CHARSET));
+                .use(new BasicBodyFactory())
+                .setBody(humanReadableText, Charsets.UTF_8)
+                .setContentType("text/plain", UTF_8_CHARSET));
         builder.addBodyPart(BodyPartBuilder.create()
-            .use(new BasicBodyFactory())
-            .setBody(report.formattedValue(), Charsets.UTF_8)
-            .setContentType(DISPOSITION_CONTENT_TYPE, UTF_8_CHARSET));
+                .use(new BasicBodyFactory())
+                .setBody(report.formattedValue(), Charsets.UTF_8)
+                .setContentType(DISPOSITION_CONTENT_TYPE, UTF_8_CHARSET));
 
         return builder.build();
     }
@@ -155,7 +237,7 @@ public class MDN {
             MDN mdn = (MDN) o;
 
             return Objects.equals(this.humanReadableText, mdn.humanReadableText)
-                && Objects.equals(this.report, mdn.report);
+                    && Objects.equals(this.report, mdn.report);
         }
         return false;
     }
