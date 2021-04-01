@@ -50,7 +50,6 @@ import com.google.common.base.Preconditions;
 
 import scala.util.Try;
 
-
 public class MDN {
     private static final NameValuePair UTF_8_CHARSET = new NameValuePair("charset", Charsets.UTF_8.name());
 
@@ -63,6 +62,7 @@ public class MDN {
         private MDNReport report;
 
         public Builder report(MDNReport report) {
+
             Preconditions.checkNotNull(report);
             this.report = report;
             return this;

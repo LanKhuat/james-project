@@ -28,8 +28,8 @@ import org.apache.james.mdn.MDN
 import org.apache.james.mdn.fields.{Disposition => JavaDisposition}
 import org.apache.james.mime4j.dom.Message
 
-import scala.jdk.OptionConverters._
 import scala.jdk.CollectionConverters._
+import scala.jdk.OptionConverters._
 import scala.util.Try
 
 object MDNParse {
@@ -159,12 +159,7 @@ object MDNParseResults {
 case class MDNParseResults(parsed: Option[Map[BlobId, MDNParsed]],
                            notFound: Option[MDNNotFound],
                            notParsable: Option[MDNNotParsable]) {
-  def asResponse(accountId: AccountId): MDNParseResponse = MDNParseResponse(
-    accountId,
-    parsed,
-    notFound,
-    notParsable
-  )
+  def asResponse(accountId: AccountId): MDNParseResponse = MDNParseResponse(accountId, parsed, notFound, notParsable)
 }
 
 case class MDNParseResponse(accountId: AccountId,

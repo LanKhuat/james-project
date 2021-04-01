@@ -19,26 +19,24 @@
 
 package org.apache.james.jmap.method
 
+import java.io.InputStream
+
 import eu.timepit.refined.auto._
+import javax.inject.Inject
 import org.apache.james.jmap.core.CapabilityIdentifier.{CapabilityIdentifier, JMAP_MAIL, JMAP_MDN}
+import org.apache.james.jmap.core.Invocation
 import org.apache.james.jmap.core.Invocation._
-import org.apache.james.jmap.core.{AccountId, ErrorCode, Invocation, Session}
 import org.apache.james.jmap.json.{MDNParseSerializer, ResponseSerializer}
-import org.apache.james.jmap.mail.MDNParse.UnparsedBlobId
 import org.apache.james.jmap.mail.{BlobId, MDNParseRequest, MDNParseResponse, MDNParseResults, MDNParsed}
 import org.apache.james.jmap.routes.{BlobNotFoundException, BlobResolvers, SessionSupplier}
 import org.apache.james.mailbox.MailboxSession
 import org.apache.james.mdn.MDN
 import org.apache.james.metrics.api.MetricFactory
 import org.apache.james.mime4j.message.DefaultMessageBuilder
-import org.apache.james.server.core.MimeMessageInputStream
-import org.apache.james.util.MimeMessageUtil
 import play.api.libs.json.{JsError, JsObject, JsSuccess}
 import reactor.core.scala.publisher.{SFlux, SMono}
 
-import java.io.InputStream
-import javax.inject.Inject
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 case class RequestTooLargeException(description: String) extends Exception
 
@@ -89,15 +87,20 @@ class MDNParseMethod @Inject()(val blobResolvers: BlobResolvers,
     val invalid: Seq[MDNParseResults] = validations.map(_.left).flatMap(_.toOption)
 
     val parsed: SFlux[MDNParseResults] = SFlux.fromIterable(parsedIds)
-      .flatMap(blobId => blobResolvers.resolve(blobId, mailboxSession))
-      .map(blob => parse(blob.blobId, blob.content))
+      .flatMap(blobId => toParseResults(blobId, mailboxSession))
+      .map(either => either.fold(e => MDNParseResults.notFound(e.blobId), result => result))
 
     SFlux.merge(Seq(parsed, SFlux.fromIterable(invalid)))
-      .onErrorRecover {
-        case e: BlobNotFoundException => MDNParseResults.notFound(e.blobId)
-      }
       .reduce(MDNParseResults.empty())(MDNParseResults.merge)
       .map(result => result.asResponse(request.accountId))
+  }
+
+  private def toParseResults(blobId: BlobId, mailboxSession: MailboxSession): SMono[Either[BlobNotFoundException, MDNParseResults]] = {
+    blobResolvers.resolve(blobId, mailboxSession)
+      .map(blob => Right(parse(blob.blobId, blob.content)))
+      .onErrorResume {
+        case e: BlobNotFoundException => SMono.just(Left(e))
+      }
   }
 
   private def parse(blobId: BlobId, blobContent: InputStream): MDNParseResults = {

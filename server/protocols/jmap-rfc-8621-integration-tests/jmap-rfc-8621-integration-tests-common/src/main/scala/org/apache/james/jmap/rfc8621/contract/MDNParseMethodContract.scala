@@ -19,6 +19,9 @@
 
 package org.apache.james.jmap.rfc8621.contract
 
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeUnit
+
 import io.netty.handler.codec.http.HttpHeaderNames.ACCEPT
 import io.restassured.RestAssured._
 import io.restassured.http.ContentType.JSON
@@ -39,9 +42,6 @@ import org.awaitility.Awaitility
 import org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS
 import org.junit.jupiter.api.{BeforeEach, Test}
 import play.api.libs.json._
-
-import java.nio.charset.StandardCharsets
-import java.util.concurrent.TimeUnit
 
 trait MDNParseMethodContract {
   private lazy val slowPacedPollInterval = ONE_HUNDRED_MILLISECONDS
@@ -94,7 +94,7 @@ trait MDNParseMethodContract {
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
       .body(request)
     .when
-      .post.prettyPeek()
+      .post
     .`then`
       .statusCode(SC_OK)
       .contentType(JSON)
@@ -404,58 +404,53 @@ trait MDNParseMethodContract {
          |    "c1"]]
          |}""".stripMargin
 
-    awaitAtMostTenSeconds.untilAsserted{
-      () => {
-        val response = `given`
-          .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-          .body(request)
-        .when
-          .post.prettyPeek()
-        .`then`
-          .statusCode(SC_OK)
-          .contentType(JSON)
-          .extract
-          .body
-          .asString
-        assertThatJson(response).isEqualTo(
-          s"""{
-             |    "sessionState": "${SESSION_STATE.value}",
-             |    "methodResponses": [[
-             |      "MDN/parse",
-             |      {
-             |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
-             |        "notFound": ["${blobIdNotFound.serialize()}"],
-             |        "notParsable": ["${blobIdNotParsable.serialize()}"],
-             |        "parsed": {
-             |           "${blobIdParsable.serialize()}": {
-             |             "subject": "Read: test",
-             |             "textBody": "To: magiclan@linagora.com\\r\\nSubject: test\\r\\nMessage was displayed on Tue Mar 30 2021 10:31:50 GMT+0700 (Indochina Time)",
-             |             "reportingUA": "OpenPaaS Unified Inbox; ",
-             |             "disposition": {
-             |               "actionMode": "manual-action",
-             |               "sendingMode": "MDN-sent-manually",
-             |               "type": "displayed"
-             |             },
-             |             "finalRecipient": "rfc822; tungexplorer@linagora.com",
-             |             "originalMessageId": "<633c6811-f897-ec7c-642a-2360366e1b93@linagora.com>",
-             |             "error": [
-             |                "Message1",
-             |                "Message2"
-             |             ],
-             |             "extension": {
-             |                "X-OPENPAAS-IP" : " 177.177.177.77",
-             |                "X-OPENPAAS-PORT" : " 8000"
-             |             }
-             |          }
-             |        }
-             |      },
-             |      "c1"
-             |        ]]
-             |}""".stripMargin)
-      }
-    }
+      val response = `given`
+        .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+        .body(request)
+      .when
+        .post
+      .`then`
+        .statusCode(SC_OK)
+        .contentType(JSON)
+        .extract
+        .body
+        .asString
+      assertThatJson(response).isEqualTo(
+        s"""{
+           |    "sessionState": "${SESSION_STATE.value}",
+           |    "methodResponses": [[
+           |      "MDN/parse",
+           |      {
+           |        "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+           |        "notFound": ["${blobIdNotFound.serialize()}"],
+           |        "notParsable": ["${blobIdNotParsable.serialize()}"],
+           |        "parsed": {
+           |           "${blobIdParsable.serialize()}": {
+           |             "subject": "Read: test",
+           |             "textBody": "To: magiclan@linagora.com\\r\\nSubject: test\\r\\nMessage was displayed on Tue Mar 30 2021 10:31:50 GMT+0700 (Indochina Time)",
+           |             "reportingUA": "OpenPaaS Unified Inbox; ",
+           |             "disposition": {
+           |               "actionMode": "manual-action",
+           |               "sendingMode": "MDN-sent-manually",
+           |               "type": "displayed"
+           |             },
+           |             "finalRecipient": "rfc822; tungexplorer@linagora.com",
+           |             "originalMessageId": "<633c6811-f897-ec7c-642a-2360366e1b93@linagora.com>",
+           |             "error": [
+           |                "Message1",
+           |                "Message2"
+           |             ],
+           |             "extension": {
+           |                "X-OPENPAAS-IP" : " 177.177.177.77",
+           |                "X-OPENPAAS-PORT" : " 8000"
+           |             }
+           |          }
+           |        }
+           |      },
+           |      "c1"
+           |        ]]
+           |}""".stripMargin)
   }
-
 
   @Test
   def mdnParseShouldReturnUnknownMethodWhenMissingOneCapability(): Unit = {
